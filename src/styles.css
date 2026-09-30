@@ -148,3 +148,9 @@ main.role-buyer .badge-available { background: #f6e7d2; color: #6b3603; }
 @media (max-width: 520px) {
   .filters-compact { grid-template-columns: 1fr; }
 }
+.profile { margin-bottom: 24px; }
+.profile-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.profile-head h2 { margin-bottom: 12px; overflow-wrap: anywhere; }
+.profile-lead { margin: -6px 0 6px; }
+.locked { margin-bottom: 24px; }
+.locked p { color: var(--muted); line-height: 1.5; margin-bottom: 0; }

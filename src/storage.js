@@ -19,3 +19,25 @@ export function writeRecords(records) {
     return false
   }
 }
+
+const PROFILE_KEY = 'livestock-seller-profile'
+
+export function readProfile() {
+  try {
+    const saved = window.localStorage.getItem(PROFILE_KEY)
+    if (!saved) return null
+    const parsed = JSON.parse(saved)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+export function writeProfile(profile) {
+  try {
+    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(profile))
+    return true
+  } catch {
+    return false
+  }
+}

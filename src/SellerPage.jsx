@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { readRecords, writeRecords } from './storage.js'
+import { readProfile, readRecords, writeProfile, writeRecords } from './storage.js'
 import { animalLabel, FIELD_IDS, matchesFilters, sortRecords, validateListing } from './listing.js'
 import { DEFAULT_CURRENCY } from './currency.js'
 import { processPhoto } from './photo.js'
@@ -7,6 +7,8 @@ import ConfirmDelete from './ConfirmDelete.jsx'
 import ListingForm from './ListingForm.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
+import SellerProfile from './SellerProfile.jsx'
+import { emptyProfile, isProfileComplete } from './sellerProfile.js'
 
 const emptyFilters = { animalType: '', location: '', status: '' }
 const emptyForm = {
@@ -41,6 +43,7 @@ function cleanForm(form) {
 
 export default function SellerPage() {
   const [records, setRecords] = useState(readRecords)
+  const [profile, setProfile] = useState(() => ({ ...emptyProfile, ...readProfile() }))
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [errors, setErrors] = useState({})
@@ -51,6 +54,7 @@ export default function SellerPage() {
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
   const deleteTrigger = useRef(null)
   const [storageWarning, setStorageWarning] = useState(false)
+  const profileComplete = isProfileComplete(profile)
 
   useEffect(() => {
     setStorageWarning(!writeRecords(records))
@@ -135,7 +139,23 @@ export default function SellerPage() {
     setErrors({})
   }
 
+  function saveProfile(next) {
+    if (!writeProfile(next)) return false
+    setProfile(next)
+    announce('Profile saved.')
+    return true
+  }
+
+  function focusProfile() {
+    document.getElementById('profile-name')?.focus()
+  }
+
   function startEdit(record) {
+    // Editing needs the listing form, which stays locked until the profile is done.
+    if (!profileComplete) {
+      focusProfile()
+      return
+    }
     setEditingId(record.id)
     setForm({
       animalType: record.animalType,
@@ -186,6 +206,10 @@ export default function SellerPage() {
   }
 
   function focusForm() {
+    if (!profileComplete) {
+      focusProfile()
+      return
+    }
     document.getElementById('listing-animal-type')?.focus()
   }
 
@@ -228,6 +252,9 @@ export default function SellerPage() {
         <p className="intro">Keep track of the animals you have available for bulk sale: add listings, update them and remove them once they are gone.</p>
       </header>
 
+      <SellerProfile profile={profile} onSave={saveProfile} />
+
+      {profileComplete ? (
       <ListingForm
         form={form}
         errors={errors}
@@ -239,6 +266,12 @@ export default function SellerPage() {
         onSubmit={handleSubmit}
         onCancel={cancelEdit}
       />
+      ) : (
+        <section className="panel locked" aria-labelledby="locked-heading">
+          <h2 id="locked-heading">Add a listing</h2>
+          <p>Finish your seller profile above to start posting. Buyers need your business name and phone number to reach you.</p>
+        </section>
+      )}
 
       <div className="visually-hidden" role="status" aria-live="polite">
         <span key={announcement.count}>{announcement.text}</span>
