@@ -1,4 +1,4 @@
-import { ANIMAL_TYPES, MAX_DESCRIPTION } from './listing.js'
+import { ANIMAL_TYPES, MAX_DESCRIPTION, STATUSES } from './listing.js'
 
 function FieldError({ name, errors }) {
   if (!errors[name]) return null
@@ -43,6 +43,12 @@ export default function ListingForm({ form, errors, isEditing, onChange, onSubmi
         <input id="listing-location" name="location" value={form.location} onChange={onChange} maxLength={80}
           {...fieldA11y('location')} />
         <FieldError name="location" errors={errors} />
+
+        <label htmlFor="listing-status">Availability <span aria-hidden="true">*</span></label>
+        <select id="listing-status" name="status" value={form.status} onChange={onChange} {...fieldA11y('status')}>
+          {STATUSES.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
+        </select>
+        <FieldError name="status" errors={errors} />
 
         <label htmlFor="listing-description">Description</label>
         <textarea id="listing-description" name="description" value={form.description} onChange={onChange}

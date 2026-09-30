@@ -1,5 +1,9 @@
 export const ANIMAL_TYPES = ['Cattle', 'Goats', 'Sheep', 'Poultry', 'Pigs', 'Other']
 export const MAX_DESCRIPTION = 500
+export const STATUSES = [
+  { value: 'available', label: 'Available' },
+  { value: 'sold', label: 'Sold' },
+]
 
 // Field order matches the form, so the first error is the first field to fix.
 export const FIELD_IDS = {
@@ -7,6 +11,7 @@ export const FIELD_IDS = {
   quantity: 'listing-quantity',
   price: 'listing-price',
   location: 'listing-location',
+  status: 'listing-status',
   description: 'listing-description',
 }
 
@@ -24,6 +29,8 @@ export function validateListing(form) {
   else if (!/^\d+(\.\d{1,2})?$/.test(price)) errors.price = 'Price must be a valid amount, such as 250 or 250.50.'
 
   if (!form.location.trim()) errors.location = 'Enter the location.'
+
+  if (!STATUSES.some((status) => status.value === form.status)) errors.status = 'Select whether the listing is available or sold.'
 
   if (form.description.trim().length > MAX_DESCRIPTION) {
     errors.description = `Description must be ${MAX_DESCRIPTION} characters or fewer.`

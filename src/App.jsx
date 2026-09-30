@@ -4,7 +4,7 @@ import { FIELD_IDS, validateListing } from './listing.js'
 import ListingForm from './ListingForm.jsx'
 import ListingList from './ListingList.jsx'
 
-const emptyForm = { animalType: '', quantity: '', price: '', location: '', description: '' }
+const emptyForm = { animalType: '', quantity: '', price: '', location: '', status: 'available', description: '' }
 
 function cleanForm(form) {
   return {
@@ -12,6 +12,7 @@ function cleanForm(form) {
     quantity: form.quantity.trim(),
     price: form.price.trim(),
     location: form.location.trim(),
+    status: form.status,
     description: form.description.trim(),
   }
 }
@@ -69,6 +70,7 @@ export default function App() {
       quantity: record.quantity,
       price: record.price,
       location: record.location,
+      status: record.status ?? 'available',
       description: record.description,
     })
     setErrors({})
@@ -79,6 +81,14 @@ export default function App() {
     setEditingId(null)
     setForm(emptyForm)
     setErrors({})
+  }
+
+  function toggleStatus(id) {
+    setRecords((current) => current.map((record) =>
+      record.id === id
+        ? { ...record, status: (record.status ?? 'available') === 'sold' ? 'available' : 'sold' }
+        : record,
+    ))
   }
 
   function deleteRecord(id) {
@@ -105,7 +115,7 @@ export default function App() {
 
       {storageWarning && <p className="notice" role="status">This browser could not save changes. Your list may not survive a refresh.</p>}
 
-      <ListingList records={records} onEdit={startEdit} onDelete={deleteRecord} />
+      <ListingList records={records} onEdit={startEdit} onToggleStatus={toggleStatus} onDelete={deleteRecord} />
       <footer><p>Listings are saved in this browser only. Browser storage is local to this origin and is not a secure or shared database.</p></footer>
     </main>
   )

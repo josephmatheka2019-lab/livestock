@@ -1,4 +1,4 @@
-export default function ListingList({ records, onEdit, onDelete }) {
+export default function ListingList({ records, onEdit, onToggleStatus, onDelete }) {
   return (
     <section className="records" aria-labelledby="records-heading">
       <div className="section-heading">
@@ -8,10 +8,15 @@ export default function ListingList({ records, onEdit, onDelete }) {
         <div className="empty"><h3>No listings yet</h3><p>Add a listing above. Saved listings stay in this browser.</p></div>
       ) : (
         <ul className="record-list">
-          {records.map((record) => (
+          {records.map((record) => {
+            const isSold = record.status === 'sold'
+            return (
             <li className="record" key={record.id}>
               <div className="record-copy">
-                <h3>{record.animalType}</h3>
+                <h3>
+                  {record.animalType}
+                  <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>
+                </h3>
                 <p className="listing-meta">
                   {[
                     record.quantity && `Quantity: ${record.quantity}`,
@@ -22,11 +27,13 @@ export default function ListingList({ records, onEdit, onDelete }) {
                 {record.description && <p>{record.description}</p>}
               </div>
               <div className="record-actions">
+                <button type="button" className="secondary" onClick={() => onToggleStatus(record.id)}>{isSold ? 'Mark available' : 'Mark as sold'}</button>
                 <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit</button>
                 <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete</button>
               </div>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
     </section>
