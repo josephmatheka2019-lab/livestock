@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'workshop-mvp-records'
+const STORAGE_KEY = 'livestock-listings'
 
 export function readRecords() {
   try {

@@ -11,7 +11,7 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
-button, input, textarea { font: inherit; }
+button, input, textarea, select { font: inherit; }
 .shell { width: min(100% - 32px, 820px); margin: 0 auto; padding: 42px 0 30px; }
 .hero { margin-bottom: 28px; }
 .eyebrow { color: var(--teal); font-size: .72rem; font-weight: 800; letter-spacing: .11em; margin: 0 0 8px; }
@@ -22,9 +22,11 @@ h3 { color: var(--navy); font-size: 1rem; margin-bottom: 6px; }
 .intro { max-width: 62ch; color: var(--muted); line-height: 1.6; margin-bottom: 0; }
 .panel, .empty { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 22px; box-shadow: 0 8px 25px rgb(16 42 67 / 5%); }
 label { display: block; font-weight: 700; margin: 14px 0 6px; }
-input, textarea { display: block; width: 100%; border: 1px solid #9fb0bc; border-radius: 8px; padding: 11px 12px; background: white; color: inherit; }
-input:focus, textarea:focus, button:focus-visible { outline: 3px solid #79c9c1; outline-offset: 2px; }
+input, textarea, select { display: block; width: 100%; border: 1px solid #9fb0bc; border-radius: 8px; padding: 11px 12px; background: white; color: inherit; }
+input:focus, textarea:focus, select:focus, button:focus-visible { outline: 3px solid #79c9c1; outline-offset: 2px; }
 [aria-invalid="true"] { border-color: #a12c35; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.listing-meta { color: var(--navy) !important; font-weight: 600; margin-bottom: 4px !important; }
 .hint { color: var(--muted); font-size: .82rem; margin: 5px 0 10px; }
 .error { color: #8c2029; font-size: .9rem; margin: 6px 0; }
 .actions, .record-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
@@ -47,6 +49,7 @@ button.danger { background: #8c3037; }
 .record-actions { margin-top: 0; flex-shrink: 0; }
 footer { color: var(--muted); font-size: .8rem; line-height: 1.5; margin-top: 28px; }
 @media (max-width: 520px) {
+  .field-row { grid-template-columns: 1fr; gap: 0; }
   .shell { width: min(100% - 24px, 820px); padding-top: 28px; }
   .panel { padding: 17px; }
   .record { align-items: flex-start; flex-direction: column; gap: 12px; }
