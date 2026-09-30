@@ -52,9 +52,10 @@ export default function ListingForm({ form, errors, isEditing, onChange, onSubmi
 
         <label htmlFor="listing-description">Description</label>
         <textarea id="listing-description" name="description" value={form.description} onChange={onChange}
-          rows="3" maxLength={MAX_DESCRIPTION} {...fieldA11y('description')} />
+          rows="3" maxLength={MAX_DESCRIPTION} {...fieldA11y('description')}
+          aria-describedby={errors.description ? 'description-error description-hint' : 'description-hint'} />
         <FieldError name="description" errors={errors} />
-        <p className="hint">Optional. Do not enter sensitive personal information.</p>
+        <p className="hint" id="description-hint">Optional. Do not enter sensitive personal information.</p>
 
         <div className="actions">
           <button type="submit">{isEditing ? 'Save changes' : 'Add listing'}</button>

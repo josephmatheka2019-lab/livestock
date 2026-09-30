@@ -9,7 +9,7 @@ export default function ListingList({
       <div className="section-heading">
         <div>
           <p className="eyebrow">YOUR LOCAL DATA</p>
-          <h2 id="records-heading">
+          <h2 id="records-heading" tabIndex={-1}>
             Listings{' '}
             <span className="count" aria-live="polite">
               {isFiltering ? `${records.length} of ${totalCount}` : totalCount}
@@ -54,9 +54,9 @@ export default function ListingList({
               </div>
               <div className="record-actions">
                 <button type="button" className="secondary" onClick={() => onView(record.id)}>View<span className="visually-hidden"> {record.animalType} listing</span></button>
-                <button type="button" className="secondary" onClick={() => onToggleStatus(record.id)}>{isSold ? 'Mark available' : 'Mark as sold'}</button>
-                <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit</button>
-                <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete</button>
+                <button type="button" className="secondary" onClick={() => onToggleStatus(record.id)}>{isSold ? 'Mark available' : 'Mark as sold'}<span className="visually-hidden"> {record.animalType} listing</span></button>
+                <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit<span className="visually-hidden"> {record.animalType} listing</span></button>
+                <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete<span className="visually-hidden"> {record.animalType} listing</span></button>
               </div>
             </li>
             )

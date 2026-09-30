@@ -26,6 +26,7 @@ export default function App() {
   const [errors, setErrors] = useState({})
   const [selectedId, setSelectedId] = useState(null)
   const [filters, setFilters] = useState(emptyFilters)
+  const [announcement, setAnnouncement] = useState({ text: '', count: 0 })
   const [storageWarning, setStorageWarning] = useState(false)
 
   useEffect(() => {
@@ -40,6 +41,10 @@ export default function App() {
       const { [name]: _cleared, ...rest } = current
       return rest
     })
+  }
+
+  function announce(text) {
+    setAnnouncement((current) => ({ text, count: current.count + 1 }))
   }
 
   function handleSubmit(event) {
@@ -63,6 +68,7 @@ export default function App() {
         ...current,
       ])
     }
+    announce(editingId ? 'Listing updated.' : 'Listing added.')
     setForm(emptyForm)
     setErrors({})
   }
@@ -88,6 +94,11 @@ export default function App() {
   }
 
   function toggleStatus(id) {
+    const target = records.find((record) => record.id === id)
+    if (target) {
+      const nowSold = (target.status ?? 'available') !== 'sold'
+      announce(`${target.animalType} listing marked as ${nowSold ? 'sold' : 'available'}.`)
+    }
     setRecords((current) => current.map((record) =>
       record.id === id
         ? { ...record, status: (record.status ?? 'available') === 'sold' ? 'available' : 'sold' }
@@ -108,6 +119,8 @@ export default function App() {
     setRecords((current) => current.filter((record) => record.id !== id))
     if (editingId === id) cancelEdit()
     if (selectedId === id) setSelectedId(null)
+    announce('Listing deleted.')
+    document.getElementById('records-heading')?.focus()
   }
 
   const isFiltering = Object.values(filters).some((value) => value.trim() !== '')
@@ -130,6 +143,10 @@ export default function App() {
         onSubmit={handleSubmit}
         onCancel={cancelEdit}
       />
+
+      <div className="visually-hidden" role="status" aria-live="polite">
+        <span key={announcement.count}>{announcement.text}</span>
+      </div>
 
       {storageWarning && <p className="notice" role="status">This browser could not save changes. Your list may not survive a refresh.</p>}
 
