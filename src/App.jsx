@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { readRecords, writeRecords } from './storage.js'
 import { FIELD_IDS, validateListing } from './listing.js'
 import ListingForm from './ListingForm.jsx'
+import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 
 const emptyForm = { animalType: '', quantity: '', price: '', location: '', status: 'available', description: '' }
@@ -22,6 +23,7 @@ export default function App() {
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [errors, setErrors] = useState({})
+  const [selectedId, setSelectedId] = useState(null)
   const [storageWarning, setStorageWarning] = useState(false)
 
   useEffect(() => {
@@ -94,7 +96,10 @@ export default function App() {
   function deleteRecord(id) {
     setRecords((current) => current.filter((record) => record.id !== id))
     if (editingId === id) cancelEdit()
+    if (selectedId === id) setSelectedId(null)
   }
+
+  const selectedRecord = records.find((record) => record.id === selectedId)
 
   return (
     <main className="shell">
@@ -115,7 +120,11 @@ export default function App() {
 
       {storageWarning && <p className="notice" role="status">This browser could not save changes. Your list may not survive a refresh.</p>}
 
-      <ListingList records={records} onEdit={startEdit} onToggleStatus={toggleStatus} onDelete={deleteRecord} />
+      {selectedRecord && (
+        <ListingDetails record={selectedRecord} onEdit={startEdit} onDelete={deleteRecord} onClose={() => setSelectedId(null)} />
+      )}
+
+      <ListingList records={records} onView={setSelectedId} onEdit={startEdit} onToggleStatus={toggleStatus} onDelete={deleteRecord} />
       <footer><p>Listings are saved in this browser only. Browser storage is local to this origin and is not a secure or shared database.</p></footer>
     </main>
   )

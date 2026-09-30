@@ -1,4 +1,4 @@
-export default function ListingList({ records, onEdit, onToggleStatus, onDelete }) {
+export default function ListingList({ records, onView, onEdit, onToggleStatus, onDelete }) {
   return (
     <section className="records" aria-labelledby="records-heading">
       <div className="section-heading">
@@ -27,6 +27,7 @@ export default function ListingList({ records, onEdit, onToggleStatus, onDelete 
                 {record.description && <p>{record.description}</p>}
               </div>
               <div className="record-actions">
+                <button type="button" className="secondary" onClick={() => onView(record.id)}>View<span className="visually-hidden"> {record.animalType} listing</span></button>
                 <button type="button" className="secondary" onClick={() => onToggleStatus(record.id)}>{isSold ? 'Mark available' : 'Mark as sold'}</button>
                 <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit</button>
                 <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete</button>
