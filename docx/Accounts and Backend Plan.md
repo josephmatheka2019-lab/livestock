@@ -12,6 +12,8 @@ database, and rules enforced by the server. Browser storage cannot do it.
 | Login method | Email and password |
 | Seller and buyer accounts | Separate accounts with separate sign-up pages. One email cannot be both. |
 | Hosting | Vercel or Netlify (free), so the app opens on any device |
+| Enquiries and messaging | **Not built, by decision.** No enquiry form, no seller inbox (the old B5 and S5). Buyers contact sellers with the Call and WhatsApp buttons. |
+| Price offers | Buyers cannot propose a price. The seller's price, and the bulk price if given, is the price. |
 
 ## Who can do what (enforced by the database)
 
@@ -62,8 +64,15 @@ becomes a buyer, the least-privileged type.
 17. **Acceptance checks per role**, updated README, a privacy note and a way to delete an account
     (the app stores phone numbers; check local data-protection rules before real use).
 
-Later, only if wanted: in-app messaging, M-Pesa payments, email verification, phone-number
-login, an admin who can remove bad listings.
+Later, only if wanted: M-Pesa payments, email verification, phone-number login, an admin who can
+remove bad listings. (In-app messaging and enquiries have been ruled out; see Decisions.)
+
+## Where the buyer and seller slices stand
+
+Built: seller S1 (profile), S2 (location pre-fill and buyer preview), S3 (dashboard), S4 (sale dates),
+S6 (pause a listing); buyer B1 (profile), B2 (richer cards), B3 (search and filters), B4 (contact and
+price calculator), B6 (saved listings); price display in other currencies for buyers.
+Dropped: S5 and B5 (enquiries). Remaining: phases A to E above, which connect real accounts.
 
 ## Limits kept on purpose
 - Payment methods are information only; the app takes no payments.

@@ -1,40 +1,118 @@
-# Vibe Coding SDLC Starter
+# Local Livestock Marketplace
 
-A React + Vite app for the three-day workshop. It demonstrates one local record workflow: create, view, edit, delete, required-title validation, an empty state, and browser storage.
+A small web app where farmers list livestock for bulk sale and buyers browse, compare and contact them.
+Built with React and Vite. It began as the Vibe Coding SDLC workshop starter.
+
+When you open it, it asks whether you want to continue as a **seller** or a **buyer**, and each
+has its own page.
+
+## What it does
+
+**Sellers**
+- Keep a seller profile (business name, phone, location). It is needed before posting.
+- Add, edit and delete listings: animal, quantity, currency, price per animal, an optional bulk price
+  for the whole lot, breed, age, weight, vaccinated / health certificate / negotiable / delivery,
+  accepted payment methods (M-Pesa, credit card, cash), a description and a photo.
+- See how a listing will look to buyers before posting it.
+- Mark listings sold (the sale date is recorded) or available again, and pause a listing to hide it
+  from buyers without deleting it.
+- See an at-a-glance summary, filter by animal, place or availability, and sort.
+
+**Buyers**
+- Browse the listings that are on sale (sold and paused ones are hidden), each showing who is selling,
+  a New tag for the first week, and the saving on a bulk deal.
+- Search by any word and filter by animal, place, payment method, minimum animals, price range, and
+  delivery / vaccinated / health certificate / negotiable.
+- View all prices in another currency (KES, USD, EUR, GBP, KWD and every other currency), converted with
+  daily exchange rates. Converted prices are marked as approximate.
+- Open a listing to see the full details, work out a price for any number of animals, and see the
+  seller's phone with Call and WhatsApp buttons once they have added their own name and number.
+- Save listings for later. A saved listing that is sold, paused or deleted stays on the list, marked
+  as no longer available.
 
 ## Requirements
 
 - Node.js 20.19+ or 22.12+
 - npm
-- VS Code and a modern browser
+- A modern browser
 
-Vite requirements can change; check https://vite.dev/guide/ before a future workshop.
-
-## Run locally
+## Run it
 
     npm install
     npm run dev
 
-Open the local address shown in the terminal. Keep the terminal running.
+Open the address shown in the terminal and keep the terminal running.
 
-Create and preview a production build:
+To build and preview a production version:
 
     npm run build
     npm run preview
 
-## Starter map
+## How the pages are reached
 
-- src/App.jsx: form, list, create/edit/delete actions, and UI states
-- src/storage.js: safe JSON read/write helpers for this browser
-- src/styles.css: responsive baseline styles
-- vite.config.js: Vite React plugin setup
+| Address | Page |
+|---|---|
+| `#/` | The first screen: continue as a seller or a buyer |
+| `#/seller` | The seller page |
+| `#/buyer` | The buyer page |
+| `#/seller/login`, `#/buyer/login` | Sign-in and sign-up pages. Built, but not linked yet and switched off until accounts are connected |
 
-## Workshop use
+Any other address shows the first screen.
 
-1. Run the app and inspect its behavior.
-2. Map each behavior to an acceptance criterion.
-3. Choose and plan your own project; adapt record fields and labels.
-4. Make one focused AI-assisted change at a time.
-5. Inspect the diff and test before committing.
+## Important limits (read before relying on it)
 
-This is a teaching scaffold, not a production backend. Browser storage is specific to this browser and site origin; it is not encrypted, shared, or suitable for secrets or sensitive information. Clearing site data deletes these records.
+- **Everything is stored in one browser.** Listings, profiles, saved listings and choices are kept in the
+  browser's local storage. A buyer on another phone or computer cannot see a seller's listings, and
+  clearing the site's data deletes them. The app shows a warning if the browser cannot save.
+- **There are no accounts yet.** Sellers and buyers are not signed in, so the roles are a convenience, not
+  security. The seller's phone number is hidden from a buyer who has not added their details, but it is
+  still in the browser's storage. The database rules that enforce this properly are written (see below)
+  but not connected.
+- **No payments.** Payment methods are information for the buyer. The app takes no money.
+- **Converted prices are approximate.** They use a free daily rates service, fetched only when a buyer
+  asks for a converted currency. A buyer pays in the seller's own currency.
+- **No messaging, by design.** Buyers contact sellers by phone or WhatsApp. There is no enquiry form or
+  inbox, and buyers cannot propose a price: the seller's price is the price.
+- Photos are shrunk to small thumbnails so they fit in the browser's roughly 5 MB of storage.
+
+## Project map
+
+- `src/App.jsx`, `src/router.js`: which page to show for an address
+- `src/Landing.jsx`: the seller or buyer choice
+- `src/SellerPage.jsx` and `SellerProfile`, `ListingForm`, `ListingPreview`, `SellerSummary`, `ConfirmDelete`: the seller side
+- `src/BuyerPage.jsx` and `BuyerProfile`, `BuyerFilters`, `CurrencyPicker`, `PriceCalculator`, `SellerContact`, `SavedList`, `SaveButton`: the buyer side
+- `src/ListingList.jsx`, `ListingSummary.jsx`, `ListingDetails.jsx`: shared by both sides (`ListingFilters.jsx` is the seller's filter bar)
+- `src/listing.js`: listing rules (validation, filtering, sorting, sold / paused state, quotes)
+- `src/currency.js`, `src/rates.js`: currencies, formatting and exchange rates
+- `src/contact.js`: Call and WhatsApp links
+- `src/saved.js`, `sellerProfile.js`, `buyerProfile.js`, `profileRules.js`, `photo.js`: smaller helpers
+- `src/storage.js`: safe read and write of everything kept in the browser
+- `src/auth.js`, `AuthPage.jsx`, `authValidation.js`: the sign-in pages, waiting for accounts
+- `supabase/`: the database for real accounts (see below)
+- `docx/`: the project plan and the implementation plans
+- `WORKSHOP-CHECKS.md`: the acceptance checks to run by hand
+
+## What is kept in the browser
+
+| Storage key | What it holds |
+|---|---|
+| `livestock-listings` | The seller's listings |
+| `livestock-seller-profile` | The seller profile |
+| `livestock-buyer-profile` | The buyer's name, phone and location |
+| `livestock-saved-listings` | The buyer's saved listings |
+| `livestock-display-currency` | The currency the buyer chose to see prices in |
+| `livestock-exchange-rates` | Today's exchange rates, kept for 12 hours |
+
+## Real accounts (not connected yet)
+
+`supabase/` holds the database definition for separate seller and buyer accounts on different devices,
+with the access rules enforced by the database (a buyer cannot change a listing, a seller can only change
+their own, and so on). `supabase/tests/rls.test.sql` checks 45 of those rules against a throwaway local
+PostgreSQL. To switch accounts on, follow `supabase/README.md`, then connect the app. Keep secret keys out
+of the repository: `.env.local` is ignored by git, and only the public key and project address belong in
+the app. The plan is in `docx/Accounts and Backend Plan.md`.
+
+## Testing
+
+There is no automated test suite for the app yet. Run the checks in `WORKSHOP-CHECKS.md` by hand after
+any change, and run `npm run build` to catch errors. The database rules have their own tests, described above.
