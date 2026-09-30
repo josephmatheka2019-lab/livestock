@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import AnimalTypeOptions from './AnimalTypeOptions.jsx'
+import ListingPreview from './ListingPreview.jsx'
 import { COMMON_CURRENCIES, OTHER_CURRENCIES } from './currency.js'
 import { MAX_AGE, MAX_BREED, MAX_DESCRIPTION, MAX_OTHER_ANIMAL, PAYMENT_METHODS, STATUSES } from './listing.js'
 
@@ -8,7 +9,7 @@ function FieldError({ name, errors }) {
   return <p className="error" id={`${name}-error`} role="alert">{errors[name]}</p>
 }
 
-export default function ListingForm({ form, errors, isEditing, onChange, onTogglePayment, onPhotoChange, onPhotoRemove, onSubmit, onCancel }) {
+export default function ListingForm({ form, profile, errors, isEditing, onChange, onTogglePayment, onPhotoChange, onPhotoRemove, onSubmit, onCancel }) {
   const photoInput = useRef(null)
 
   // Clear the file input's leftover file name when the form is reset or the photo removed.
@@ -157,6 +158,8 @@ export default function ListingForm({ form, errors, isEditing, onChange, onToggl
             <button type="button" className="secondary" onClick={onPhotoRemove}>Remove photo</button>
           </div>
         )}
+
+        <ListingPreview form={form} profile={profile} />
 
         <div className="actions">
           <button type="submit">{isEditing ? 'Save changes' : 'Add listing'}</button>

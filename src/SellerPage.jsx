@@ -18,6 +18,11 @@ const emptyForm = {
   paymentMethods: [], description: '', photo: '',
 }
 
+// A new listing starts blank except for the location, which comes from the seller's profile.
+function blankForm(profile) {
+  return { ...emptyForm, location: profile.location || '' }
+}
+
 function cleanForm(form) {
   return {
     animalType: form.animalType,
@@ -44,7 +49,7 @@ function cleanForm(form) {
 export default function SellerPage() {
   const [records, setRecords] = useState(readRecords)
   const [profile, setProfile] = useState(() => ({ ...emptyProfile, ...readProfile() }))
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState(() => blankForm(profile))
   const [editingId, setEditingId] = useState(null)
   const [errors, setErrors] = useState({})
   const [selectedId, setSelectedId] = useState(null)
@@ -135,12 +140,16 @@ export default function SellerPage() {
       ])
     }
     announce(editingId ? 'Listing updated.' : 'Listing added.')
-    setForm(emptyForm)
+    setForm(blankForm(profile))
     setErrors({})
   }
 
   function saveProfile(next) {
     if (!writeProfile(next)) return false
+    // A blank form still showing the old default location follows the profile; a location the seller typed is kept.
+    if (!editingId) {
+      setForm((current) => (current.location === profile.location ? { ...current, location: next.location } : current))
+    }
     setProfile(next)
     announce('Profile saved.')
     return true
@@ -183,7 +192,7 @@ export default function SellerPage() {
 
   function cancelEdit() {
     setEditingId(null)
-    setForm(emptyForm)
+    setForm(blankForm(profile))
     setErrors({})
   }
 
@@ -257,6 +266,7 @@ export default function SellerPage() {
       {profileComplete ? (
       <ListingForm
         form={form}
+        profile={profile}
         errors={errors}
         isEditing={Boolean(editingId)}
         onChange={handleChange}

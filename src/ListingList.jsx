@@ -1,6 +1,6 @@
 import ListingFilters from './ListingFilters.jsx'
-import { formatMoney } from './currency.js'
-import { animalLabel, paymentLabels, SORT_OPTIONS, termTags } from './listing.js'
+import ListingSummary from './ListingSummary.jsx'
+import { animalLabel, SORT_OPTIONS } from './listing.js'
 
 export default function ListingList({
   records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange,
@@ -51,40 +51,9 @@ export default function ListingList({
         <ul className="record-list">
           {records.map((record) => {
             const isSold = record.status === 'sold'
-            const facts = [
-              record.breed && `Breed: ${record.breed}`,
-              record.age && `Age: ${record.age}`,
-              record.weight && `Avg weight: ${record.weight} kg`,
-            ].filter(Boolean)
             return (
             <li className="record" key={record.id}>
-              <div className="record-main">
-              {record.photo && <img className="thumb" src={record.photo} alt={`Photo of ${animalLabel(record)} listing`} />}
-              <div className="record-copy">
-                <h3>
-                  {animalLabel(record)}
-                  {!readOnly && <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>}
-                </h3>
-                <p className="listing-meta">
-                  {[
-                    record.quantity && `Quantity: ${record.quantity}`,
-                    record.price && `${formatMoney(record.price, record.currency)} each`,
-                    record.bulkPrice && `Bulk deal: ${formatMoney(record.bulkPrice, record.currency)} for all`,
-                    record.location && `Location: ${record.location}`,
-                  ].filter(Boolean).join(' · ')}
-                </p>
-                {facts.length > 0 && <p className="listing-facts">{facts.join(' · ')}</p>}
-                {termTags(record).length > 0 && (
-                  <ul className="tags" aria-label="Terms">
-                    {termTags(record).map((tag) => <li key={tag}>{tag}</li>)}
-                  </ul>
-                )}
-                {paymentLabels(record.paymentMethods).length > 0 && (
-                  <p className="listing-payments">Accepts: {paymentLabels(record.paymentMethods).join(', ')}</p>
-                )}
-                {record.description && <p>{record.description}</p>}
-              </div>
-              </div>
+              <ListingSummary record={record} showStatus={!readOnly} />
               <div className="record-actions">
                 <button type="button" className="secondary" onClick={() => onView(record.id)}>View<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
                 {!readOnly && <>

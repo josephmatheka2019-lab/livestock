@@ -154,3 +154,9 @@ main.role-buyer .badge-available { background: #f6e7d2; color: #6b3603; }
 .profile-lead { margin: -6px 0 6px; }
 .locked { margin-bottom: 24px; }
 .locked p { color: var(--muted); line-height: 1.5; margin-bottom: 0; }
+.preview { margin: 18px 0 0; border: 1px dashed #9fb0bc; border-radius: 10px; padding: 12px 14px; background: #fafcfd; }
+.preview summary { cursor: pointer; font-weight: 700; color: var(--navy); }
+.preview summary:focus-visible { outline: 3px solid #79c9c1; outline-offset: 2px; border-radius: 4px; }
+.preview-card { margin: 12px 0; border-style: solid; }
+.preview-seller { margin: 8px 0 2px; overflow-wrap: anywhere; }
+.preview .hint { margin-top: 0; }
