@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { readRecords, writeRecords } from './storage.js'
 
-const ANIMAL_TYPES = ['Cattle', 'Goats', 'Sheep', 'Poultry', 'Pigs', 'Other']
+import { ANIMAL_TYPES, FIELD_IDS, MAX_DESCRIPTION, validateListing } from './listing.js'
+
 const emptyForm = { animalType: '', quantity: '', price: '', location: '', description: '' }
 
 function cleanForm(form) {
@@ -18,23 +19,36 @@ export default function App() {
   const [records, setRecords] = useState(readRecords)
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
   const [storageWarning, setStorageWarning] = useState(false)
 
   useEffect(() => {
     setStorageWarning(!writeRecords(records))
   }, [records])
 
+  function fieldA11y(name) {
+    return errors[name]
+      ? { 'aria-invalid': true, 'aria-describedby': `${name}-error` }
+      : {}
+  }
+
   function handleChange(event) {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))
-    if (name === 'animalType' && value) setError('')
+    setErrors((current) => {
+      if (!current[name]) return current
+      const { [name]: _cleared, ...rest } = current
+      return rest
+    })
   }
 
   function handleSubmit(event) {
     event.preventDefault()
-    if (!form.animalType) {
-      setError('Select an animal type before saving.')
+    const found = validateListing(form)
+    const firstInvalid = Object.keys(FIELD_IDS).find((name) => found[name])
+    if (firstInvalid) {
+      setErrors(found)
+      document.getElementById(FIELD_IDS[firstInvalid])?.focus()
       return
     }
     const fields = cleanForm(form)
@@ -50,7 +64,7 @@ export default function App() {
       ])
     }
     setForm(emptyForm)
-    setError('')
+    setErrors({})
   }
 
   function startEdit(record) {
@@ -62,14 +76,14 @@ export default function App() {
       location: record.location,
       description: record.description,
     })
-    setError('')
+    setErrors({})
     document.getElementById('listing-animal-type')?.focus()
   }
 
   function cancelEdit() {
     setEditingId(null)
     setForm(emptyForm)
-    setError('')
+    setErrors({})
   }
 
   function deleteRecord(id) {
@@ -90,31 +104,36 @@ export default function App() {
         <form onSubmit={handleSubmit} noValidate>
           <label htmlFor="listing-animal-type">Animal type <span aria-hidden="true">*</span></label>
           <select id="listing-animal-type" name="animalType" value={form.animalType} onChange={handleChange}
-            aria-invalid={Boolean(error)} aria-describedby={error ? 'animal-type-error' : undefined}>
+            {...fieldA11y('animalType')}>
             <option value="">Select an animal type</option>
             {ANIMAL_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
           </select>
-          {error && <p className="error" id="animal-type-error" role="alert">{error}</p>}
+          <FieldError name="animalType" errors={errors} />
 
           <div className="field-row">
             <div>
-              <label htmlFor="listing-quantity">Quantity</label>
+              <label htmlFor="listing-quantity">Quantity <span aria-hidden="true">*</span></label>
               <input id="listing-quantity" name="quantity" type="number" inputMode="numeric" min="1" step="1"
-                value={form.quantity} onChange={handleChange} />
+                value={form.quantity} onChange={handleChange} {...fieldA11y('quantity')} />
+              <FieldError name="quantity" errors={errors} />
             </div>
             <div>
-              <label htmlFor="listing-price">Price per animal</label>
+              <label htmlFor="listing-price">Price per animal <span aria-hidden="true">*</span></label>
               <input id="listing-price" name="price" type="number" inputMode="decimal" min="0" step="0.01"
-                value={form.price} onChange={handleChange} />
+                value={form.price} onChange={handleChange} {...fieldA11y('price')} />
+              <FieldError name="price" errors={errors} />
             </div>
           </div>
 
-          <label htmlFor="listing-location">Location</label>
-          <input id="listing-location" name="location" value={form.location} onChange={handleChange} maxLength={80} />
+          <label htmlFor="listing-location">Location <span aria-hidden="true">*</span></label>
+          <input id="listing-location" name="location" value={form.location} onChange={handleChange} maxLength={80}
+            {...fieldA11y('location')} />
+          <FieldError name="location" errors={errors} />
 
           <label htmlFor="listing-description">Description</label>
           <textarea id="listing-description" name="description" value={form.description} onChange={handleChange}
-            rows="3" maxLength={500} />
+            rows="3" maxLength={MAX_DESCRIPTION} {...fieldA11y('description')} />
+          <FieldError name="description" errors={errors} />
           <p className="hint">Optional. Do not enter sensitive personal information.</p>
 
           <div className="actions">
@@ -159,4 +178,9 @@ export default function App() {
       <footer><p>Listings are saved in this browser only. Browser storage is local to this origin and is not a secure or shared database.</p></footer>
     </main>
   )
+}
+
+function FieldError({ name, errors }) {
+  if (!errors[name]) return null
+  return <p className="error" id={`${name}-error`} role="alert">{errors[name]}</p>
 }
