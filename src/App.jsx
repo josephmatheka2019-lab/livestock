@@ -93,6 +93,10 @@ export default function App() {
     ))
   }
 
+  function focusForm() {
+    document.getElementById('listing-animal-type')?.focus()
+  }
+
   function deleteRecord(id) {
     setRecords((current) => current.filter((record) => record.id !== id))
     if (editingId === id) cancelEdit()
@@ -124,7 +128,7 @@ export default function App() {
         <ListingDetails record={selectedRecord} onEdit={startEdit} onDelete={deleteRecord} onClose={() => setSelectedId(null)} />
       )}
 
-      <ListingList records={records} onView={setSelectedId} onEdit={startEdit} onToggleStatus={toggleStatus} onDelete={deleteRecord} />
+      <ListingList records={records} onAddFirst={focusForm} onView={setSelectedId} onEdit={startEdit} onToggleStatus={toggleStatus} onDelete={deleteRecord} />
       <footer><p>Listings are saved in this browser only. Browser storage is local to this origin and is not a secure or shared database.</p></footer>
     </main>
   )

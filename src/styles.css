@@ -40,7 +40,7 @@ button.danger { background: #8c3037; }
 .count { color: var(--muted); font-size: .85rem; }
 .empty { color: var(--muted); }
 .empty h3 { margin-bottom: 6px; }
-.empty p { margin-bottom: 0; line-height: 1.5; }
+.empty p { margin-bottom: 14px; line-height: 1.5; }
 .record-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .record { display: flex; align-items: center; justify-content: space-between; gap: 18px; background: white; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
 .record-copy { min-width: 0; }
