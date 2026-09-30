@@ -1,7 +1,8 @@
 import ListingFilters from './ListingFilters.jsx'
+import { SORT_OPTIONS } from './listing.js'
 
 export default function ListingList({
-  records, totalCount, filters, isFiltering, onFilterChange, onClearFilters,
+  records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange,
   onAddFirst, onView, onEdit, onToggleStatus, onDelete,
 }) {
   return (
@@ -16,6 +17,14 @@ export default function ListingList({
             </span>
           </h2>
         </div>
+        {totalCount > 1 && (
+          <div className="sort">
+            <label htmlFor="sort-order">Sort by</label>
+            <select id="sort-order" value={sort} onChange={onSortChange}>
+              {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </div>
+        )}
       </div>
       {totalCount > 0 && (
         <ListingFilters filters={filters} onChange={onFilterChange} onClear={onClearFilters} isFiltering={isFiltering} />
@@ -38,6 +47,8 @@ export default function ListingList({
             const isSold = record.status === 'sold'
             return (
             <li className="record" key={record.id}>
+              <div className="record-main">
+              {record.photo && <img className="thumb" src={record.photo} alt={`Photo of ${record.animalType} listing`} />}
               <div className="record-copy">
                 <h3>
                   {record.animalType}
@@ -51,6 +62,7 @@ export default function ListingList({
                   ].filter(Boolean).join(' · ')}
                 </p>
                 {record.description && <p>{record.description}</p>}
+              </div>
               </div>
               <div className="record-actions">
                 <button type="button" className="secondary" onClick={() => onView(record.id)}>View<span className="visually-hidden"> {record.animalType} listing</span></button>

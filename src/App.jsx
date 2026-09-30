@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { readRecords, writeRecords } from './storage.js'
-import { FIELD_IDS, matchesFilters, validateListing } from './listing.js'
+import { FIELD_IDS, matchesFilters, sortRecords, validateListing } from './listing.js'
+import { processPhoto } from './photo.js'
 import ListingForm from './ListingForm.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 
 const emptyFilters = { animalType: '', location: '', status: '' }
-const emptyForm = { animalType: '', quantity: '', price: '', location: '', status: 'available', description: '' }
+const emptyForm = { animalType: '', quantity: '', price: '', location: '', status: 'available', description: '', photo: '' }
 
 function cleanForm(form) {
   return {
@@ -16,6 +17,7 @@ function cleanForm(form) {
     location: form.location.trim(),
     status: form.status,
     description: form.description.trim(),
+    photo: form.photo,
   }
 }
 
@@ -26,6 +28,7 @@ export default function App() {
   const [errors, setErrors] = useState({})
   const [selectedId, setSelectedId] = useState(null)
   const [filters, setFilters] = useState(emptyFilters)
+  const [sort, setSort] = useState('newest')
   const [announcement, setAnnouncement] = useState({ text: '', count: 0 })
   const [storageWarning, setStorageWarning] = useState(false)
 
@@ -41,6 +44,32 @@ export default function App() {
       const { [name]: _cleared, ...rest } = current
       return rest
     })
+  }
+
+  async function handlePhotoChange(event) {
+    const input = event.target
+    const file = input.files[0]
+    if (!file) return
+    try {
+      const photo = await processPhoto(file)
+      setForm((current) => ({ ...current, photo }))
+      setErrors((current) => {
+        const { photo: _cleared, ...rest } = current
+        return rest
+      })
+    } catch (error) {
+      input.value = ''
+      setErrors((current) => ({ ...current, photo: error.message }))
+    }
+  }
+
+  function removePhoto() {
+    setForm((current) => ({ ...current, photo: '' }))
+    setErrors((current) => {
+      const { photo: _cleared, ...rest } = current
+      return rest
+    })
+    document.getElementById('listing-photo')?.focus()
   }
 
   function announce(text) {
@@ -82,6 +111,7 @@ export default function App() {
       location: record.location,
       status: record.status ?? 'available',
       description: record.description,
+      photo: record.photo ?? '',
     })
     setErrors({})
     document.getElementById('listing-animal-type')?.focus()
@@ -124,7 +154,7 @@ export default function App() {
   }
 
   const isFiltering = Object.values(filters).some((value) => value.trim() !== '')
-  const visibleRecords = records.filter((record) => matchesFilters(record, filters))
+  const visibleRecords = sortRecords(records.filter((record) => matchesFilters(record, filters)), sort)
   const selectedRecord = records.find((record) => record.id === selectedId)
 
   return (
@@ -140,6 +170,8 @@ export default function App() {
         errors={errors}
         isEditing={Boolean(editingId)}
         onChange={handleChange}
+        onPhotoChange={handlePhotoChange}
+        onPhotoRemove={removePhoto}
         onSubmit={handleSubmit}
         onCancel={cancelEdit}
       />
@@ -158,6 +190,8 @@ export default function App() {
         records={visibleRecords}
         totalCount={records.length}
         filters={filters}
+        sort={sort}
+        onSortChange={(event) => setSort(event.target.value)}
         isFiltering={isFiltering}
         onFilterChange={handleFilterChange}
         onClearFilters={() => setFilters(emptyFilters)}

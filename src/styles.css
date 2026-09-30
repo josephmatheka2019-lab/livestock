@@ -87,3 +87,17 @@ button:disabled { opacity: .5; cursor: not-allowed; filter: none; }
   .record-actions button, .actions button { flex: 1 1 calc(50% - 8px); }
   .details h2 { font-size: 1.15rem; }
 }
+.photo-preview { display: flex; align-items: flex-end; gap: 12px; margin: 8px 0 4px; }
+.photo-preview img { width: 120px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.record-main { display: flex; align-items: flex-start; gap: 14px; min-width: 0; }
+.thumb { width: 88px; height: 88px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); flex-shrink: 0; }
+.detail-photo { display: block; width: 100%; max-width: 420px; max-height: 320px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); margin: 0 0 18px; }
+.sort { display: flex; align-items: center; gap: 8px; }
+.sort label { margin: 0; font-size: .85rem; white-space: nowrap; }
+.sort select { width: auto; padding-block: 8px; }
+.section-heading { flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+@media (max-width: 520px) {
+  .thumb { width: 72px; height: 72px; }
+  .sort { width: 100%; }
+  .sort select { flex: 1; }
+}

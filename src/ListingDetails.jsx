@@ -30,6 +30,7 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose }) {
         {record.animalType}
         <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>
       </h2>
+      {record.photo && <img className="detail-photo" src={record.photo} alt={`Photo of ${record.animalType} listing`} />}
       <dl className="detail-grid">
         <div><dt>Animal type</dt><dd>{record.animalType}</dd></div>
         <div><dt>Quantity</dt><dd>{record.quantity || 'Not given'}</dd></div>

@@ -13,6 +13,7 @@ export const FIELD_IDS = {
   location: 'listing-location',
   status: 'listing-status',
   description: 'listing-description',
+  photo: 'listing-photo',
 }
 
 export function validateListing(form) {
@@ -46,4 +47,23 @@ export function matchesFilters(record, filters) {
   if (filters.status && (record.status ?? 'available') !== filters.status) return false
   if (location && !(record.location ?? '').toLowerCase().includes(location)) return false
   return true
+}
+
+export const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'name-asc', label: 'Animal type A–Z' },
+  { value: 'name-desc', label: 'Animal type Z–A' },
+]
+
+// Listings have no separate name, so "name" is the animal type. Ties fall back
+// to newest first so the order stays predictable.
+export function sortRecords(records, sort) {
+  const newestFirst = (a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''))
+  const byName = (a, b) => a.animalType.localeCompare(b.animalType, undefined, { sensitivity: 'base' })
+  const compare = {
+    newest: newestFirst,
+    'name-asc': (a, b) => byName(a, b) || newestFirst(a, b),
+    'name-desc': (a, b) => byName(b, a) || newestFirst(a, b),
+  }[sort] ?? newestFirst
+  return [...records].sort(compare)
 }
