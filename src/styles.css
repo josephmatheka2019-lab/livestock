@@ -220,3 +220,7 @@ a.button.button-whatsapp { background: #1b7a43; }
 .listing-seller { color: var(--muted); font-size: .9rem; margin: -2px 0 6px; overflow-wrap: anywhere; }
 .listing-seller strong { color: var(--navy); }
 .record-copy .saving-line { color: #00534f; font-weight: 700; font-size: .9rem; margin: 0 0 6px; }
+.view-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.record-gone { background: #f7f9fa; border-style: dashed; }
+.record-gone .record-copy p { color: var(--muted); line-height: 1.5; }
+#saved-heading:focus { outline: none; }

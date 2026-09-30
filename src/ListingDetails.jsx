@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { describeCurrency, moneyLabel } from './currency.js'
 import { animalLabel, bulkSaving, formatDay, paymentLabels } from './listing.js'
 
-export default function ListingDetails({ record, onEdit, onDelete, onClose, readOnly = false, display = null, children = null }) {
+export default function ListingDetails({ record, onEdit, onDelete, onClose, readOnly = false, display = null, children = null, extraActions = null }) {
   const headingRef = useRef(null)
 
   useEffect(() => {
@@ -56,6 +56,7 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose, read
       <p className="detail-description">{record.description || 'No description added.'}</p>
       {children}
       <div className="actions">
+        {extraActions}
         {!readOnly && <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit</button>}
         {!readOnly && <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete</button>}
         <button type="button" className="secondary" onClick={onClose}>Close</button>

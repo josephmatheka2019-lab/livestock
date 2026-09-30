@@ -83,3 +83,23 @@ export function writeBuyerProfile(profile) {
     return false
   }
 }
+
+const SAVED_KEY = 'livestock-saved-listings'
+
+// Raw saved entries; saved.js checks and cleans them.
+export function readSaved() {
+  try {
+    return JSON.parse(window.localStorage.getItem(SAVED_KEY))
+  } catch {
+    return null
+  }
+}
+
+export function writeSaved(list) {
+  try {
+    window.localStorage.setItem(SAVED_KEY, JSON.stringify(list))
+    return true
+  } catch {
+    return false
+  }
+}
