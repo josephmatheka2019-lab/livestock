@@ -1,4 +1,5 @@
-import { ANIMAL_TYPES, STATUSES } from './listing.js'
+import AnimalTypeOptions from './AnimalTypeOptions.jsx'
+import { STATUSES } from './listing.js'
 
 export default function ListingFilters({ filters, onChange, onClear, isFiltering }) {
   return (
@@ -7,7 +8,7 @@ export default function ListingFilters({ filters, onChange, onClear, isFiltering
         <label htmlFor="filter-animal-type">Animal type</label>
         <select id="filter-animal-type" name="animalType" value={filters.animalType} onChange={onChange}>
           <option value="">All types</option>
-          {ANIMAL_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+          <AnimalTypeOptions />
         </select>
       </div>
       <div>

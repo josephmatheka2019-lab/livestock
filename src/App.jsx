@@ -1,21 +1,28 @@
 import { useEffect, useState } from 'react'
 import { readRecords, writeRecords } from './storage.js'
 import { FIELD_IDS, matchesFilters, sortRecords, validateListing } from './listing.js'
+import { DEFAULT_CURRENCY } from './currency.js'
 import { processPhoto } from './photo.js'
 import ListingForm from './ListingForm.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 
 const emptyFilters = { animalType: '', location: '', status: '' }
-const emptyForm = { animalType: '', quantity: '', price: '', location: '', status: 'available', description: '', photo: '' }
+const emptyForm = {
+  animalType: '', quantity: '', currency: DEFAULT_CURRENCY, price: '', bulkPrice: '',
+  location: '', status: 'available', paymentMethods: [], description: '', photo: '',
+}
 
 function cleanForm(form) {
   return {
     animalType: form.animalType,
     quantity: form.quantity.trim(),
+    currency: form.currency,
     price: form.price.trim(),
+    bulkPrice: form.bulkPrice.trim(),
     location: form.location.trim(),
     status: form.status,
+    paymentMethods: form.paymentMethods,
     description: form.description.trim(),
     photo: form.photo,
   }
@@ -42,6 +49,19 @@ export default function App() {
     setErrors((current) => {
       if (!current[name]) return current
       const { [name]: _cleared, ...rest } = current
+      return rest
+    })
+  }
+
+  function togglePayment(method) {
+    setForm((current) => ({
+      ...current,
+      paymentMethods: current.paymentMethods.includes(method)
+        ? current.paymentMethods.filter((item) => item !== method)
+        : [...current.paymentMethods, method],
+    }))
+    setErrors((current) => {
+      const { paymentMethods: _cleared, ...rest } = current
       return rest
     })
   }
@@ -107,9 +127,12 @@ export default function App() {
     setForm({
       animalType: record.animalType,
       quantity: record.quantity,
+      currency: record.currency ?? DEFAULT_CURRENCY,
       price: record.price,
+      bulkPrice: record.bulkPrice ?? '',
       location: record.location,
       status: record.status ?? 'available',
+      paymentMethods: record.paymentMethods ?? [],
       description: record.description,
       photo: record.photo ?? '',
     })
@@ -170,6 +193,7 @@ export default function App() {
         errors={errors}
         isEditing={Boolean(editingId)}
         onChange={handleChange}
+        onTogglePayment={togglePayment}
         onPhotoChange={handlePhotoChange}
         onPhotoRemove={removePhoto}
         onSubmit={handleSubmit}

@@ -17,9 +17,12 @@ localStorage only exists in one browser on one device. A buyer on another phone 
 ## Slice 1: Rename the app and switch to the listing fields
 - Change the header, intro and footer text to "Local Livestock Marketplace".
 - Replace `title`/`details` with the listing fields:
-  - `animalType`: a dropdown of cattle, goats, sheep, poultry, pigs and other
+  - `animalType`: a grouped dropdown of farm animals (cattle, sheep and goats, pigs, poultry and birds, horses and donkeys, camels and llamas, other farm animals), always ending with "Other" in case an animal is missing
   - `quantity`
-  - `price`
+  - `currency`: chosen from every currency the browser knows (KES, USD, EUR, GBP and KWD listed first)
+  - `price`: the price per animal
+  - `bulkPrice`: an optional total price for the whole lot, for sellers who offer a bulk deal
+  - `paymentMethods`: the accepted ways to pay (M-Pesa, credit card, cash)
   - `location`
   - `description`
   - `createdAt`: already recorded by the starter
@@ -31,7 +34,10 @@ localStorage only exists in one browser on one device. A buyer on another phone 
 - Move the rules into a `validateListing(form)` function in a new `src/listing.js`:
   - animal type is selected
   - quantity is a whole number greater than 0
-  - price is a valid number of 0 or more
+  - a currency is selected
+  - price per animal is a valid amount (up to three decimals, as some currencies use them)
+  - bulk price, if given, is a valid amount
+  - at least one payment method is chosen
   - location isn't empty
   - description is at most 500 characters
 - Show an error under each invalid field and focus the first one. Nothing is saved while any field is invalid.
@@ -77,7 +83,7 @@ localStorage only exists in one browser on one device. A buyer on another phone 
 - **Seller/buyer roles:** this needs a backend, so it's a separate phase.
 
 ## Decisions still to make
-1. **Price per animal or total price?** Recommended: store the price per animal and work out the total. It keeps filtering and sorting simple.
-2. **Currency:** which currency and symbol should the app show?
-3. **Animal types:** confirm the dropdown list and whether to include "Other".
+1. **Price per animal or total price?** Decided: store both. The price per animal is required, and an optional bulk price covers the whole lot. The details view shows how much a bulk buyer saves.
+2. **Currency:** decided: the seller picks the currency for each listing. The app has no exchange-rate source, so it does not convert prices between currencies.
+3. **Animal types:** decided: a broad grouped list, with "Other" as the last option.
 4. **Seller/buyer scope:** confirm it's future work, as recommended above.

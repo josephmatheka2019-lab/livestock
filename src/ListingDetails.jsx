@@ -1,14 +1,12 @@
 import { useEffect, useRef } from 'react'
+import { describeCurrency, formatMoney } from './currency.js'
+import { bulkSaving, paymentLabels } from './listing.js'
 
 function formatDate(iso) {
   const date = new Date(iso)
   return Number.isNaN(date.getTime())
     ? 'Unknown'
     : date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-function formatAmount(value) {
-  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function ListingDetails({ record, onEdit, onDelete, onClose }) {
@@ -22,6 +20,8 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose }) {
   const price = Number(record.price)
   const hasTotal = record.quantity !== '' && record.price !== '' && !Number.isNaN(quantity) && !Number.isNaN(price)
   const isSold = record.status === 'sold'
+  const saving = bulkSaving(record)
+  const payments = paymentLabels(record.paymentMethods)
 
   return (
     <section className="panel details" aria-labelledby="details-heading">
@@ -34,8 +34,19 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose }) {
       <dl className="detail-grid">
         <div><dt>Animal type</dt><dd>{record.animalType}</dd></div>
         <div><dt>Quantity</dt><dd>{record.quantity || 'Not given'}</dd></div>
-        <div><dt>Price per animal</dt><dd>{record.price ? formatAmount(price) : 'Not given'}</dd></div>
-        <div><dt>Total value</dt><dd>{hasTotal ? formatAmount(quantity * price) : 'Not available'}</dd></div>
+        <div><dt>Price per animal</dt><dd>{record.price ? formatMoney(record.price, record.currency) : 'Not given'}</dd></div>
+        <div><dt>Total at full price</dt><dd>{hasTotal ? formatMoney(quantity * price, record.currency) : 'Not available'}</dd></div>
+        {record.bulkPrice && (
+          <div>
+            <dt>Bulk price (whole lot)</dt>
+            <dd>
+              {formatMoney(record.bulkPrice, record.currency)}
+              {saving > 0 && <span className="saving"> Saves {formatMoney(saving, record.currency)}</span>}
+            </dd>
+          </div>
+        )}
+        <div><dt>Currency</dt><dd>{describeCurrency(record.currency ?? 'KES')}</dd></div>
+        <div><dt>Accepted payment</dt><dd>{payments.length ? payments.join(', ') : 'Not given'}</dd></div>
         <div><dt>Location</dt><dd>{record.location || 'Not given'}</dd></div>
         <div><dt>Availability</dt><dd>{isSold ? 'Sold' : 'Available'}</dd></div>
         <div><dt>Date listed</dt><dd>{formatDate(record.createdAt)}</dd></div>

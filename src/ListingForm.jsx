@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react'
-import { ANIMAL_TYPES, MAX_DESCRIPTION, STATUSES } from './listing.js'
+import AnimalTypeOptions from './AnimalTypeOptions.jsx'
+import { COMMON_CURRENCIES, OTHER_CURRENCIES } from './currency.js'
+import { MAX_DESCRIPTION, PAYMENT_METHODS, STATUSES } from './listing.js'
 
 function FieldError({ name, errors }) {
   if (!errors[name]) return null
   return <p className="error" id={`${name}-error`} role="alert">{errors[name]}</p>
 }
 
-export default function ListingForm({ form, errors, isEditing, onChange, onPhotoChange, onPhotoRemove, onSubmit, onCancel }) {
+export default function ListingForm({ form, errors, isEditing, onChange, onTogglePayment, onPhotoChange, onPhotoRemove, onSubmit, onCancel }) {
   const photoInput = useRef(null)
 
   // Clear the file input's leftover file name when the form is reset or the photo removed.
@@ -28,7 +30,7 @@ export default function ListingForm({ form, errors, isEditing, onChange, onPhoto
         <select id="listing-animal-type" name="animalType" value={form.animalType} onChange={onChange}
           {...fieldA11y('animalType')}>
           <option value="">Select an animal type</option>
-          {ANIMAL_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+          <AnimalTypeOptions />
         </select>
         <FieldError name="animalType" errors={errors} />
 
@@ -40,12 +42,35 @@ export default function ListingForm({ form, errors, isEditing, onChange, onPhoto
             <FieldError name="quantity" errors={errors} />
           </div>
           <div>
+            <label htmlFor="listing-currency">Currency <span aria-hidden="true">*</span></label>
+            <select id="listing-currency" name="currency" value={form.currency} onChange={onChange} {...fieldA11y('currency')}>
+              <optgroup label="Common currencies">
+                {COMMON_CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code} – {c.name}</option>)}
+              </optgroup>
+              <optgroup label="All other currencies">
+                {OTHER_CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code} – {c.name}</option>)}
+              </optgroup>
+            </select>
+            <FieldError name="currency" errors={errors} />
+          </div>
+        </div>
+
+        <div className="field-row">
+          <div>
             <label htmlFor="listing-price">Price per animal <span aria-hidden="true">*</span></label>
-            <input id="listing-price" name="price" type="number" inputMode="decimal" min="0" step="0.01"
+            <input id="listing-price" name="price" type="number" inputMode="decimal" min="0" step="any"
               value={form.price} onChange={onChange} {...fieldA11y('price')} />
             <FieldError name="price" errors={errors} />
           </div>
+          <div>
+            <label htmlFor="listing-bulk-price">Bulk price for the whole lot</label>
+            <input id="listing-bulk-price" name="bulkPrice" type="number" inputMode="decimal" min="0" step="any"
+              value={form.bulkPrice} onChange={onChange} {...fieldA11y('bulkPrice')}
+              aria-describedby={errors.bulkPrice ? 'bulkPrice-error bulk-hint' : 'bulk-hint'} />
+            <FieldError name="bulkPrice" errors={errors} />
+          </div>
         </div>
+        <p className="hint" id="bulk-hint">Optional. One total price for all {form.quantity || 'the'} animals, if you offer a deal to bulk buyers.</p>
 
         <label htmlFor="listing-location">Location <span aria-hidden="true">*</span></label>
         <input id="listing-location" name="location" value={form.location} onChange={onChange} maxLength={80}
@@ -57,6 +82,18 @@ export default function ListingForm({ form, errors, isEditing, onChange, onPhoto
           {STATUSES.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
         </select>
         <FieldError name="status" errors={errors} />
+
+        <fieldset className="checkbox-group" aria-describedby={errors.paymentMethods ? 'paymentMethods-error' : undefined}>
+          <legend>Accepted payment methods <span aria-hidden="true">*</span></legend>
+          {PAYMENT_METHODS.map((method) => (
+            <label className="check" key={method.value} htmlFor={`listing-payment-${method.value}`}>
+              <input id={`listing-payment-${method.value}`} type="checkbox" checked={form.paymentMethods.includes(method.value)}
+                onChange={() => onTogglePayment(method.value)} />
+              {method.label}
+            </label>
+          ))}
+          <FieldError name="paymentMethods" errors={errors} />
+        </fieldset>
 
         <label htmlFor="listing-description">Description</label>
         <textarea id="listing-description" name="description" value={form.description} onChange={onChange}

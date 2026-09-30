@@ -1,5 +1,6 @@
 import ListingFilters from './ListingFilters.jsx'
-import { SORT_OPTIONS } from './listing.js'
+import { formatMoney } from './currency.js'
+import { paymentLabels, SORT_OPTIONS } from './listing.js'
 
 export default function ListingList({
   records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange,
@@ -57,10 +58,14 @@ export default function ListingList({
                 <p className="listing-meta">
                   {[
                     record.quantity && `Quantity: ${record.quantity}`,
-                    record.price && `Price: ${record.price} each`,
+                    record.price && `${formatMoney(record.price, record.currency)} each`,
+                    record.bulkPrice && `Bulk deal: ${formatMoney(record.bulkPrice, record.currency)} for all`,
                     record.location && `Location: ${record.location}`,
                   ].filter(Boolean).join(' · ')}
                 </p>
+                {paymentLabels(record.paymentMethods).length > 0 && (
+                  <p className="listing-payments">Accepts: {paymentLabels(record.paymentMethods).join(', ')}</p>
+                )}
                 {record.description && <p>{record.description}</p>}
               </div>
               </div>

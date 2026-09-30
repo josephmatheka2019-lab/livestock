@@ -101,3 +101,9 @@ button:disabled { opacity: .5; cursor: not-allowed; filter: none; }
   .sort { width: 100%; }
   .sort select { flex: 1; }
 }
+.checkbox-group { border: 0; padding: 0; margin: 14px 0 0; }
+.checkbox-group legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
+.check { display: flex; align-items: center; gap: 10px; font-weight: 600; margin: 4px 0; }
+.check input[type="checkbox"] { width: 20px; height: 20px; min-height: 20px; flex-shrink: 0; accent-color: var(--teal); }
+.listing-payments { font-size: .85rem; margin-bottom: 4px !important; }
+.saving { color: #00534f; font-size: .85rem; }
