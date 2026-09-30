@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { readRecords, writeRecords } from './storage.js'
-
-import { ANIMAL_TYPES, FIELD_IDS, MAX_DESCRIPTION, validateListing } from './listing.js'
+import { FIELD_IDS, validateListing } from './listing.js'
+import ListingForm from './ListingForm.jsx'
+import ListingList from './ListingList.jsx'
 
 const emptyForm = { animalType: '', quantity: '', price: '', location: '', description: '' }
 
@@ -25,12 +26,6 @@ export default function App() {
   useEffect(() => {
     setStorageWarning(!writeRecords(records))
   }, [records])
-
-  function fieldA11y(name) {
-    return errors[name]
-      ? { 'aria-invalid': true, 'aria-describedby': `${name}-error` }
-      : {}
-  }
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -99,88 +94,19 @@ export default function App() {
         <p className="intro">Keep track of the animals you have available for bulk sale: add listings, update them and remove them once they are gone.</p>
       </header>
 
-      <section className="panel" aria-labelledby="form-heading">
-        <h2 id="form-heading">{editingId ? 'Edit listing' : 'Add a listing'}</h2>
-        <form onSubmit={handleSubmit} noValidate>
-          <label htmlFor="listing-animal-type">Animal type <span aria-hidden="true">*</span></label>
-          <select id="listing-animal-type" name="animalType" value={form.animalType} onChange={handleChange}
-            {...fieldA11y('animalType')}>
-            <option value="">Select an animal type</option>
-            {ANIMAL_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-          </select>
-          <FieldError name="animalType" errors={errors} />
-
-          <div className="field-row">
-            <div>
-              <label htmlFor="listing-quantity">Quantity <span aria-hidden="true">*</span></label>
-              <input id="listing-quantity" name="quantity" type="number" inputMode="numeric" min="1" step="1"
-                value={form.quantity} onChange={handleChange} {...fieldA11y('quantity')} />
-              <FieldError name="quantity" errors={errors} />
-            </div>
-            <div>
-              <label htmlFor="listing-price">Price per animal <span aria-hidden="true">*</span></label>
-              <input id="listing-price" name="price" type="number" inputMode="decimal" min="0" step="0.01"
-                value={form.price} onChange={handleChange} {...fieldA11y('price')} />
-              <FieldError name="price" errors={errors} />
-            </div>
-          </div>
-
-          <label htmlFor="listing-location">Location <span aria-hidden="true">*</span></label>
-          <input id="listing-location" name="location" value={form.location} onChange={handleChange} maxLength={80}
-            {...fieldA11y('location')} />
-          <FieldError name="location" errors={errors} />
-
-          <label htmlFor="listing-description">Description</label>
-          <textarea id="listing-description" name="description" value={form.description} onChange={handleChange}
-            rows="3" maxLength={MAX_DESCRIPTION} {...fieldA11y('description')} />
-          <FieldError name="description" errors={errors} />
-          <p className="hint">Optional. Do not enter sensitive personal information.</p>
-
-          <div className="actions">
-            <button type="submit">{editingId ? 'Save changes' : 'Add listing'}</button>
-            {editingId && <button type="button" className="secondary" onClick={cancelEdit}>Cancel</button>}
-          </div>
-        </form>
-      </section>
+      <ListingForm
+        form={form}
+        errors={errors}
+        isEditing={Boolean(editingId)}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+        onCancel={cancelEdit}
+      />
 
       {storageWarning && <p className="notice" role="status">This browser could not save changes. Your list may not survive a refresh.</p>}
 
-      <section className="records" aria-labelledby="records-heading">
-        <div className="section-heading">
-          <div><p className="eyebrow">YOUR LOCAL DATA</p><h2 id="records-heading">Listings <span className="count">{records.length}</span></h2></div>
-        </div>
-        {records.length === 0 ? (
-          <div className="empty"><h3>No listings yet</h3><p>Add a listing above. Saved listings stay in this browser.</p></div>
-        ) : (
-          <ul className="record-list">
-            {records.map((record) => (
-              <li className="record" key={record.id}>
-                <div className="record-copy">
-                  <h3>{record.animalType}</h3>
-                  <p className="listing-meta">
-                    {[
-                      record.quantity && `Quantity: ${record.quantity}`,
-                      record.price && `Price: ${record.price} each`,
-                      record.location && `Location: ${record.location}`,
-                    ].filter(Boolean).join(' · ')}
-                  </p>
-                  {record.description && <p>{record.description}</p>}
-                </div>
-                <div className="record-actions">
-                  <button type="button" className="secondary" onClick={() => startEdit(record)}>Edit</button>
-                  <button type="button" className="danger" onClick={() => deleteRecord(record.id)}>Delete</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <ListingList records={records} onEdit={startEdit} onDelete={deleteRecord} />
       <footer><p>Listings are saved in this browser only. Browser storage is local to this origin and is not a secure or shared database.</p></footer>
     </main>
   )
-}
-
-function FieldError({ name, errors }) {
-  if (!errors[name]) return null
-  return <p className="error" id={`${name}-error`} role="alert">{errors[name]}</p>
 }
