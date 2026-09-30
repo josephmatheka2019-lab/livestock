@@ -4,7 +4,7 @@ import { animalLabel, SORT_OPTIONS } from './listing.js'
 
 export default function ListingList({
   records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange, sortOptions = SORT_OPTIONS,
-  onAddFirst, onView, onEdit, onToggleStatus, onDelete, readOnly = false, display = null,
+  onAddFirst, onView, onEdit, onToggleStatus, onDelete, readOnly = false, display = null, filtersNode = null,
 }) {
   return (
     <section className="records" aria-labelledby="records-heading">
@@ -27,9 +27,9 @@ export default function ListingList({
           </div>
         )}
       </div>
-      {totalCount > 0 && (
+      {totalCount > 0 && (filtersNode ?? (
         <ListingFilters filters={filters} onChange={onFilterChange} onClear={onClearFilters} isFiltering={isFiltering} showStatus={!readOnly} />
-      )}
+      ))}
       {totalCount === 0 && readOnly ? (
         <div className="empty">
           <h3>No livestock is listed for sale yet.</h3>
@@ -44,7 +44,7 @@ export default function ListingList({
       ) : records.length === 0 ? (
         <div className="empty">
           <h3>No listings match these filters</h3>
-          <p>Try a different animal type or location.</p>
+          <p>{readOnly ? 'Try a different search, or clear some of the filters.' : 'Try a different animal type or location.'}</p>
           <button type="button" className="secondary" onClick={onClearFilters}>Clear filters</button>
         </div>
       ) : (

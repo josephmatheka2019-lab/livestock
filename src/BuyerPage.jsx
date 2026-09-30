@@ -1,24 +1,25 @@
 import { useEffect, useState } from 'react'
 import BuyerProfile from './BuyerProfile.jsx'
+import BuyerFilters from './BuyerFilters.jsx'
 import CurrencyPicker from './CurrencyPicker.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 import PriceCalculator from './PriceCalculator.jsx'
 import SellerContact from './SellerContact.jsx'
-import { matchesFilters, sortRecords } from './listing.js'
+import {
+  emptyBuyerFilters, isBuyerFiltering, matchesBuyerFilters, PRICE_SORT_OPTIONS, SORT_OPTIONS, sortRecords,
+} from './listing.js'
 import { loadRates } from './rates.js'
 import { emptyBuyerProfile, isBuyerProfileComplete } from './buyerProfile.js'
 import {
   readBuyerProfile, readDisplayCurrency, readProfile, readRecords, writeBuyerProfile, writeDisplayCurrency,
 } from './storage.js'
 
-const emptyFilters = { animalType: '', location: '', status: '' }
-
 // Buyers can only look: no form, and no way to change or remove a listing.
 // For now the listings are the ones sellers saved in this same browser.
 export default function BuyerPage() {
   const [records, setRecords] = useState(readRecords)
-  const [filters, setFilters] = useState(emptyFilters)
+  const [filters, setFilters] = useState(emptyBuyerFilters)
   const [sort, setSort] = useState('newest')
   const [selectedId, setSelectedId] = useState(null)
   const [currency, setCurrency] = useState(readDisplayCurrency)
@@ -57,6 +58,8 @@ export default function BuyerPage() {
   function chooseCurrency(code) {
     setCurrency(code)
     writeDisplayCurrency(code)
+    // Price limits are typed in the chosen currency, so they would mean something else after a change.
+    setFilters((current) => ({ ...current, minPrice: '', maxPrice: '' }))
   }
 
   // Only convert once the rates are in; until then (or if they fail) buyers see the sellers' own prices.
@@ -64,13 +67,17 @@ export default function BuyerPage() {
 
   // Sold listings are not for sale, so buyers never see them.
   const available = records.filter((record) => (record.status ?? 'available') !== 'sold')
-  const isFiltering = Object.values(filters).some((value) => value.trim() !== '')
-  const visible = sortRecords(available.filter((record) => matchesFilters(record, filters)), sort)
+  const isFiltering = isBuyerFiltering(filters)
+  // Price sorting and price limits need a converted currency; without one they are not offered.
+  const sortOptions = display ? [...SORT_OPTIONS, ...PRICE_SORT_OPTIONS] : SORT_OPTIONS
+  const activeSort = sortOptions.some((option) => option.value === sort) ? sort : 'newest'
+  const priceState = !currency ? 'choose' : fx.status === 'ready' ? 'ready' : fx.status === 'error' ? 'error' : 'loading'
+  const visible = sortRecords(available.filter((record) => matchesBuyerFilters(record, filters, display)), activeSort, display)
   const selected = available.find((record) => record.id === selectedId)
 
   function handleFilterChange(event) {
-    const { name, value } = event.target
-    setFilters((current) => ({ ...current, [name]: value }))
+    const { name, value, type, checked } = event.target
+    setFilters((current) => ({ ...current, [name]: type === 'checkbox' ? checked : value }))
   }
 
   return (
@@ -79,7 +86,7 @@ export default function BuyerPage() {
       <header className="hero">
         <p className="eyebrow">FOR BUYERS</p>
         <h1>Find livestock</h1>
-        <p className="intro">Browse animals that sellers have listed for bulk sale. Filter by animal and location, and open a listing to see the full details.</p>
+        <p className="intro">Browse animals that sellers have listed for bulk sale. Search by breed, animal or place, filter by price and what is offered, and open a listing to see the full details.</p>
       </header>
 
       <BuyerProfile profile={profile} onSave={saveProfile} openRequest={profileRequests} />
@@ -105,10 +112,21 @@ export default function BuyerPage() {
         records={visible}
         totalCount={available.length}
         filters={filters}
-        sort={sort}
+        sort={activeSort}
+        sortOptions={sortOptions}
         isFiltering={isFiltering}
         onFilterChange={handleFilterChange}
-        onClearFilters={() => setFilters(emptyFilters)}
+        onClearFilters={() => setFilters(emptyBuyerFilters)}
+        filtersNode={(
+          <BuyerFilters
+            filters={filters}
+            onChange={handleFilterChange}
+            onClear={() => setFilters(emptyBuyerFilters)}
+            isFiltering={isFiltering}
+            priceState={priceState}
+            currency={currency}
+          />
+        )}
         onSortChange={(event) => setSort(event.target.value)}
         onView={setSelectedId}
       />

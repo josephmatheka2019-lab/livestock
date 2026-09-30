@@ -1,4 +1,5 @@
 import { isKnownCurrency } from './currency.js'
+import { convert } from './rates.js'
 
 export const ANIMAL_GROUPS = [
   { label: 'Cattle, buffalo and yaks', types: ['Cattle', 'Dairy cattle', 'Beef cattle', 'Bulls', 'Cows', 'Heifers', 'Calves', 'Oxen', 'Buffalo', 'Bison', 'Yaks'] },
@@ -119,14 +120,25 @@ export const SELLER_SORT_OPTIONS = [...SORT_OPTIONS, { value: 'sold-recent', lab
 
 // Listings have no separate name, so "name" is the animal type. Ties fall back
 // to newest first so the order stays predictable.
-export function sortRecords(records, sort) {
+export function sortRecords(records, sort, display = null) {
   const newestFirst = (a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''))
   const byName = (a, b) => animalLabel(a).localeCompare(animalLabel(b), undefined, { sensitivity: 'base' })
+  const byPrice = (a, b, direction) => {
+    const priceA = priceIn(a, display)
+    const priceB = priceIn(b, display)
+    if (priceA == null && priceB == null) return 0
+    if (priceA == null) return 1
+    if (priceB == null) return -1
+    return (priceA - priceB) * direction
+  }
   const compare = {
     newest: newestFirst,
     'name-asc': (a, b) => byName(a, b) || newestFirst(a, b),
     'name-desc': (a, b) => byName(b, a) || newestFirst(a, b),
     // Latest sale first; listings with no sale date (still available, or sold before dates were kept) go last.
+    // Price sorts compare in the buyer's display currency; listings with no usable price go last either way.
+    'price-asc': (a, b) => byPrice(a, b, 1) || newestFirst(a, b),
+    'price-desc': (a, b) => byPrice(a, b, -1) || newestFirst(a, b),
     'sold-recent': (a, b) => String(b.soldAt ?? '').localeCompare(String(a.soldAt ?? '')) || newestFirst(a, b),
   }[sort] ?? newestFirst
   return [...records].sort(compare)
@@ -215,4 +227,66 @@ export function quoteFor(record, wanted) {
     // Only the whole lot gets the bulk price; the saving is what it undercuts the per-animal total by.
     saving: isWholeLot && hasBulk && bulk < fullPrice ? Math.round((fullPrice - bulk) * 1000) / 1000 : 0,
   }
+}
+
+// Price per animal in the buyer's display currency, or null when it cannot be worked out
+// (no price, no display currency chosen yet, or no exchange rate for that currency).
+export function priceIn(record, display) {
+  if (!display?.rates || !display.currency || !record.price) return null
+  const converted = convert(Number(record.price), record.currency ?? 'KES', display.currency, display.rates)
+  return converted == null || Number.isNaN(converted) ? null : converted
+}
+
+export const PRICE_SORT_OPTIONS = [
+  { value: 'price-asc', label: 'Price: low to high' },
+  { value: 'price-desc', label: 'Price: high to low' },
+]
+
+export const emptyBuyerFilters = {
+  search: '', animalType: '', location: '', payment: '', minQuantity: '', minPrice: '', maxPrice: '',
+  delivery: false, vaccinated: false, healthCertificate: false, negotiable: false,
+}
+
+// Reads a filter box that should hold a non-negative number; blank or unusable means "no limit".
+function bound(text) {
+  const value = String(text ?? '').trim()
+  if (!/^\d+(\.\d+)?$/.test(value)) return null
+  return Number(value)
+}
+
+export function isBuyerFiltering(filters) {
+  return Object.entries(filters).some(([, value]) => (typeof value === 'boolean' ? value : String(value).trim() !== ''))
+}
+
+// Every filter that is set must match. Price limits are in the buyer's display currency, so they
+// only apply once one is chosen (the filter boxes are switched off until then).
+export function matchesBuyerFilters(record, filters, display = null) {
+  if (!matchesFilters(record, { animalType: filters.animalType, location: filters.location, status: '' })) return false
+
+  const words = filters.search.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (words.length > 0) {
+    const text = [animalLabel(record), record.animalType, record.breed, record.age, record.description, record.location]
+      .filter(Boolean).join(' ').toLowerCase()
+    if (!words.every((word) => text.includes(word))) return false
+  }
+
+  if (filters.payment && !(record.paymentMethods ?? []).includes(filters.payment)) return false
+
+  const minQuantity = bound(filters.minQuantity)
+  if (minQuantity != null && !(Number(record.quantity) >= minQuantity)) return false
+
+  for (const flag of ['delivery', 'vaccinated', 'healthCertificate', 'negotiable']) {
+    if (filters[flag] && !record[flag]) return false
+  }
+
+  const minPrice = bound(filters.minPrice)
+  const maxPrice = bound(filters.maxPrice)
+  if ((minPrice != null || maxPrice != null) && display) {
+    const price = priceIn(record, display)
+    if (price == null) return false
+    if (minPrice != null && price < minPrice) return false
+    if (maxPrice != null && price > maxPrice) return false
+  }
+
+  return true
 }
