@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import BuyerProfile from './BuyerProfile.jsx'
 import CurrencyPicker from './CurrencyPicker.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 import { matchesFilters, sortRecords } from './listing.js'
 import { loadRates } from './rates.js'
-import { readDisplayCurrency, readRecords, writeDisplayCurrency } from './storage.js'
+import { emptyBuyerProfile } from './buyerProfile.js'
+import { readBuyerProfile, readDisplayCurrency, readRecords, writeBuyerProfile, writeDisplayCurrency } from './storage.js'
 
 const emptyFilters = { animalType: '', location: '', status: '' }
 
@@ -16,6 +18,7 @@ export default function BuyerPage() {
   const [sort, setSort] = useState('newest')
   const [selectedId, setSelectedId] = useState(null)
   const [currency, setCurrency] = useState(readDisplayCurrency)
+  const [profile, setProfile] = useState(() => ({ ...emptyBuyerProfile, ...readBuyerProfile() }))
   const [fx, setFx] = useState({ status: 'idle', rates: null, date: '', stale: false })
 
   useEffect(() => {
@@ -36,6 +39,12 @@ export default function BuyerPage() {
       .catch(() => { if (!cancelled) setFx({ status: 'error', rates: null, date: '', stale: false }) })
     return () => { cancelled = true }
   }, [currency]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function saveProfile(next) {
+    if (!writeBuyerProfile(next)) return false
+    setProfile(next)
+    return true
+  }
 
   function chooseCurrency(code) {
     setCurrency(code)
@@ -64,6 +73,8 @@ export default function BuyerPage() {
         <h1>Find livestock</h1>
         <p className="intro">Browse animals that sellers have listed for bulk sale. Filter by animal and location, and open a listing to see the full details.</p>
       </header>
+
+      <BuyerProfile profile={profile} onSave={saveProfile} />
 
       <CurrencyPicker value={currency} onChange={chooseCurrency} status={fx.status} date={fx.date} stale={fx.stale} />
 

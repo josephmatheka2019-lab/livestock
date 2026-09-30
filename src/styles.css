@@ -182,3 +182,4 @@ select.chip-on { background: #9a4f04; color: white; border-color: #9a4f04; }
 .stat-none { color: var(--muted); font-weight: 600; }
 .summary .hint { margin: 6px 0 0; }
 .sold-date { color: #3e4c59; font-size: .85rem; font-weight: 700; margin: -2px 0 6px; }
+.profile-note { color: var(--muted); line-height: 1.5; margin: -4px 0 4px; }

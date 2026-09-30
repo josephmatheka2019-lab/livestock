@@ -61,3 +61,25 @@ export function writeDisplayCurrency(code) {
     // The choice still applies for this visit; it just is not remembered.
   }
 }
+
+const BUYER_PROFILE_KEY = 'livestock-buyer-profile'
+
+export function readBuyerProfile() {
+  try {
+    const saved = window.localStorage.getItem(BUYER_PROFILE_KEY)
+    if (!saved) return null
+    const parsed = JSON.parse(saved)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+export function writeBuyerProfile(profile) {
+  try {
+    window.localStorage.setItem(BUYER_PROFILE_KEY, JSON.stringify(profile))
+    return true
+  } catch {
+    return false
+  }
+}
