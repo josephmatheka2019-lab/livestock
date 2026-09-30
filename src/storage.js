@@ -41,3 +41,23 @@ export function writeProfile(profile) {
     return false
   }
 }
+
+const DISPLAY_CURRENCY_KEY = 'livestock-display-currency'
+
+// The currency a buyer last chose to see prices in ('' means each seller's own currency).
+export function readDisplayCurrency() {
+  try {
+    const saved = window.localStorage.getItem(DISPLAY_CURRENCY_KEY)
+    return /^[A-Z]{3}$/.test(saved ?? '') ? saved : ''
+  } catch {
+    return ''
+  }
+}
+
+export function writeDisplayCurrency(code) {
+  try {
+    window.localStorage.setItem(DISPLAY_CURRENCY_KEY, code)
+  } catch {
+    // The choice still applies for this visit; it just is not remembered.
+  }
+}

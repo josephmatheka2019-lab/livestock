@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import CurrencyPicker from './CurrencyPicker.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 import { matchesFilters, sortRecords } from './listing.js'
-import { readRecords } from './storage.js'
+import { loadRates } from './rates.js'
+import { readDisplayCurrency, readRecords, writeDisplayCurrency } from './storage.js'
 
 const emptyFilters = { animalType: '', location: '', status: '' }
 
@@ -13,6 +15,8 @@ export default function BuyerPage() {
   const [filters, setFilters] = useState(emptyFilters)
   const [sort, setSort] = useState('newest')
   const [selectedId, setSelectedId] = useState(null)
+  const [currency, setCurrency] = useState(readDisplayCurrency)
+  const [fx, setFx] = useState({ status: 'idle', rates: null, date: '', stale: false })
 
   useEffect(() => {
     document.title = 'Find livestock – Local Livestock Marketplace'
@@ -21,6 +25,25 @@ export default function BuyerPage() {
     window.addEventListener('storage', refresh)
     return () => window.removeEventListener('storage', refresh)
   }, [])
+
+  // Rates are fetched only once a buyer asks for a converted currency, and reused for the rest of the visit.
+  useEffect(() => {
+    if (!currency || fx.status === 'ready') return undefined
+    let cancelled = false
+    setFx((current) => ({ ...current, status: 'loading' }))
+    loadRates()
+      .then(({ rates, date, stale }) => { if (!cancelled) setFx({ status: 'ready', rates, date, stale }) })
+      .catch(() => { if (!cancelled) setFx({ status: 'error', rates: null, date: '', stale: false }) })
+    return () => { cancelled = true }
+  }, [currency]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function chooseCurrency(code) {
+    setCurrency(code)
+    writeDisplayCurrency(code)
+  }
+
+  // Only convert once the rates are in; until then (or if they fail) buyers see the sellers' own prices.
+  const display = currency && fx.status === 'ready' ? { currency, rates: fx.rates } : null
 
   // Sold listings are not for sale, so buyers never see them.
   const available = records.filter((record) => (record.status ?? 'available') !== 'sold')
@@ -42,12 +65,15 @@ export default function BuyerPage() {
         <p className="intro">Browse animals that sellers have listed for bulk sale. Filter by animal and location, and open a listing to see the full details.</p>
       </header>
 
+      <CurrencyPicker value={currency} onChange={chooseCurrency} status={fx.status} date={fx.date} stale={fx.stale} />
+
       {selected && (
-        <ListingDetails record={selected} readOnly onClose={() => setSelectedId(null)} />
+        <ListingDetails record={selected} readOnly display={display} onClose={() => setSelectedId(null)} />
       )}
 
       <ListingList
         readOnly
+        display={display}
         records={visible}
         totalCount={available.length}
         filters={filters}

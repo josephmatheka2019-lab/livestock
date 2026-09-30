@@ -8,6 +8,7 @@ import ListingForm from './ListingForm.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 import SellerProfile from './SellerProfile.jsx'
+import SellerSummary from './SellerSummary.jsx'
 import { emptyProfile, isProfileComplete } from './sellerProfile.js'
 
 const emptyFilters = { animalType: '', location: '', status: '' }
@@ -262,6 +263,8 @@ export default function SellerPage() {
       </header>
 
       <SellerProfile profile={profile} onSave={saveProfile} />
+
+      <SellerSummary records={records} />
 
       {profileComplete ? (
       <ListingForm

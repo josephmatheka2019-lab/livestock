@@ -1,3 +1,5 @@
+import { convert } from './rates.js'
+
 export const DEFAULT_CURRENCY = 'KES'
 
 // Shown first in the dropdown; everything else follows alphabetically by name.
@@ -46,4 +48,22 @@ export function formatMoney(value, code = DEFAULT_CURRENCY) {
   } catch {
     return `${code} ${number.toLocaleString('en')}`
   }
+}
+
+// The buyer's chosen display currency, as { currency, rates }, or null to show the seller's own prices.
+// Returns the text to show and, when it was converted, the seller's original price for reference.
+export function moneyParts(value, code = DEFAULT_CURRENCY, display = null) {
+  const original = formatMoney(value, code)
+  if (!original || !display?.rates || !display.currency || display.currency === code) {
+    return { text: original, original: null }
+  }
+  const converted = convert(Number(value), code, display.currency, display.rates)
+  if (converted == null || Number.isNaN(converted)) return { text: original, original: null }
+  return { text: '≈ ' + formatMoney(converted, display.currency), original }
+}
+
+// One string, for places that show a single figure: "≈ $61.94 (KES 8,000.00)".
+export function moneyLabel(value, code, display) {
+  const { text, original } = moneyParts(value, code, display)
+  return original ? text + ' (' + original + ')' : text
 }

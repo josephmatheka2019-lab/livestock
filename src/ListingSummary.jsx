@@ -1,9 +1,9 @@
-import { formatMoney } from './currency.js'
+import { moneyParts } from './currency.js'
 import { animalLabel, paymentLabels, termTags } from './listing.js'
 
 // The photo and text of one listing, shared by the seller's list, the buyer's list
 // and the seller's "how buyers will see this" preview so they cannot drift apart.
-export default function ListingSummary({ record, showStatus = false }) {
+export default function ListingSummary({ record, showStatus = false, display = null }) {
   const isSold = record.status === 'sold'
   const facts = [
     record.breed && `Breed: ${record.breed}`,
@@ -12,6 +12,9 @@ export default function ListingSummary({ record, showStatus = false }) {
   ].filter(Boolean)
   const tags = termTags(record)
   const payments = paymentLabels(record.paymentMethods)
+  const price = moneyParts(record.price, record.currency, display)
+  const bulk = moneyParts(record.bulkPrice, record.currency, display)
+  const withOriginal = (parts, suffix) => `${parts.text} ${suffix}${parts.original ? ` (${parts.original})` : ''}`
 
   return (
     <div className="record-main">
@@ -24,8 +27,8 @@ export default function ListingSummary({ record, showStatus = false }) {
         <p className="listing-meta">
           {[
             record.quantity && `Quantity: ${record.quantity}`,
-            record.price && `${formatMoney(record.price, record.currency)} each`,
-            record.bulkPrice && `Bulk deal: ${formatMoney(record.bulkPrice, record.currency)} for all`,
+            record.price && withOriginal(price, 'each'),
+            record.bulkPrice && `Bulk deal: ${withOriginal(bulk, 'for all')}`,
             record.location && `Location: ${record.location}`,
           ].filter(Boolean).join(' · ')}
         </p>

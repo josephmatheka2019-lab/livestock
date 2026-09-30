@@ -149,3 +149,19 @@ export function termTags(record) {
     record.delivery && 'Delivery offered',
   ].filter(Boolean)
 }
+
+// Numbers for the seller's dashboard. Value is quantity x price per animal, added up
+// separately for each currency because prices are never mixed across currencies.
+export function summarizeListings(records) {
+  const summary = { total: records.length, available: 0, sold: 0, availableValue: {}, soldValue: {} }
+  for (const record of records) {
+    const isSold = record.status === 'sold'
+    summary[isSold ? 'sold' : 'available'] += 1
+    const value = Number(record.quantity) * Number(record.price)
+    if (!Number.isFinite(value)) continue
+    const bucket = isSold ? summary.soldValue : summary.availableValue
+    const code = record.currency ?? 'KES'
+    bucket[code] = Math.round(((bucket[code] ?? 0) + value) * 1000) / 1000
+  }
+  return summary
+}
