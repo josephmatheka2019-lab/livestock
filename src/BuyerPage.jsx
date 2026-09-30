@@ -3,10 +3,14 @@ import BuyerProfile from './BuyerProfile.jsx'
 import CurrencyPicker from './CurrencyPicker.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
+import PriceCalculator from './PriceCalculator.jsx'
+import SellerContact from './SellerContact.jsx'
 import { matchesFilters, sortRecords } from './listing.js'
 import { loadRates } from './rates.js'
-import { emptyBuyerProfile } from './buyerProfile.js'
-import { readBuyerProfile, readDisplayCurrency, readRecords, writeBuyerProfile, writeDisplayCurrency } from './storage.js'
+import { emptyBuyerProfile, isBuyerProfileComplete } from './buyerProfile.js'
+import {
+  readBuyerProfile, readDisplayCurrency, readProfile, readRecords, writeBuyerProfile, writeDisplayCurrency,
+} from './storage.js'
 
 const emptyFilters = { animalType: '', location: '', status: '' }
 
@@ -20,11 +24,15 @@ export default function BuyerPage() {
   const [currency, setCurrency] = useState(readDisplayCurrency)
   const [profile, setProfile] = useState(() => ({ ...emptyBuyerProfile, ...readBuyerProfile() }))
   const [fx, setFx] = useState({ status: 'idle', rates: null, date: '', stale: false })
+  // Until accounts exist, the only seller profile is the one saved in this browser, so it is
+  // the contact for every listing. With accounts, each listing will carry its own seller.
+  const [seller, setSeller] = useState(readProfile)
+  const [profileRequests, setProfileRequests] = useState(0)
 
   useEffect(() => {
     document.title = 'Find livestock – Local Livestock Marketplace'
-    // Pick up listings a seller saves in another tab of this browser.
-    const refresh = () => setRecords(readRecords())
+    // Pick up listings and seller details saved in another tab of this browser.
+    const refresh = () => { setRecords(readRecords()); setSeller(readProfile()) }
     window.addEventListener('storage', refresh)
     return () => window.removeEventListener('storage', refresh)
   }, [])
@@ -74,12 +82,21 @@ export default function BuyerPage() {
         <p className="intro">Browse animals that sellers have listed for bulk sale. Filter by animal and location, and open a listing to see the full details.</p>
       </header>
 
-      <BuyerProfile profile={profile} onSave={saveProfile} />
+      <BuyerProfile profile={profile} onSave={saveProfile} openRequest={profileRequests} />
 
       <CurrencyPicker value={currency} onChange={chooseCurrency} status={fx.status} date={fx.date} stale={fx.stale} />
 
       {selected && (
-        <ListingDetails record={selected} readOnly display={display} onClose={() => setSelectedId(null)} />
+        <ListingDetails record={selected} readOnly display={display} onClose={() => setSelectedId(null)}>
+          <PriceCalculator key={selected.id} record={selected} display={display} />
+          <SellerContact
+            record={selected}
+            seller={seller}
+            buyer={profile}
+            buyerReady={isBuyerProfileComplete(profile)}
+            onNeedProfile={() => setProfileRequests((count) => count + 1)}
+          />
+        </ListingDetails>
       )}
 
       <ListingList

@@ -11,7 +11,7 @@ function FieldError({ name, errors }) {
 
 // A buyer can browse without a profile, so an unfinished one is a short invitation rather
 // than a form in the way. The details are needed later, to contact sellers.
-export default function BuyerProfile({ profile, onSave }) {
+export default function BuyerProfile({ profile, onSave, openRequest = 0 }) {
   const complete = isBuyerProfileComplete(profile)
   const [editing, setEditing] = useState(false)
   const [values, setValues] = useState({ ...emptyBuyerProfile, ...profile })
@@ -25,6 +25,11 @@ export default function BuyerProfile({ profile, onSave }) {
   useEffect(() => {
     if (editing) nameInput.current?.focus()
   }, [editing])
+
+  // Another part of the page (the contact box) can ask for the form to open.
+  useEffect(() => {
+    if (openRequest > 0) open()
+  }, [openRequest]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function field(name) {
     return errors[name]

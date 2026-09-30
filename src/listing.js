@@ -186,3 +186,33 @@ export function formatDay(iso, style = 'short') {
   if (!iso || Number.isNaN(date.getTime())) return ''
   return date.toLocaleDateString(undefined, { year: 'numeric', month: style, day: 'numeric' })
 }
+
+// What a buyer would pay for a number of animals, at the per-animal price, and - when they
+// take the whole lot - the seller's bulk price. `error` is set when the number is not usable.
+export function quoteFor(record, wanted) {
+  const available = Number(record.quantity)
+  const price = Number(record.price)
+  const text = String(wanted ?? '').trim()
+
+  if (!text) return { state: 'empty' }
+  if (!/^\d+$/.test(text) || Number(text) < 1 || Number(text) > available) {
+    return { state: 'error', message: `Enter a whole number from 1 to ${available}.` }
+  }
+  if (!record.price || Number.isNaN(price)) return { state: 'no-price', quantity: Number(text) }
+
+  const quantity = Number(text)
+  const fullPrice = Math.round(quantity * price * 1000) / 1000
+  const hasBulk = Boolean(record.bulkPrice) && !Number.isNaN(Number(record.bulkPrice))
+  const bulk = hasBulk ? Number(record.bulkPrice) : null
+  const isWholeLot = quantity === available
+  return {
+    state: 'ok',
+    quantity,
+    available,
+    fullPrice,
+    isWholeLot,
+    bulk,
+    // Only the whole lot gets the bulk price; the saving is what it undercuts the per-animal total by.
+    saving: isWholeLot && hasBulk && bulk < fullPrice ? Math.round((fullPrice - bulk) * 1000) / 1000 : 0,
+  }
+}
