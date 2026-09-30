@@ -1,13 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { describeCurrency, moneyLabel } from './currency.js'
-import { animalLabel, bulkSaving, paymentLabels } from './listing.js'
-
-function formatDate(iso) {
-  const date = new Date(iso)
-  return Number.isNaN(date.getTime())
-    ? 'Unknown'
-    : date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-}
+import { animalLabel, bulkSaving, formatDay, paymentLabels } from './listing.js'
 
 export default function ListingDetails({ record, onEdit, onDelete, onClose, readOnly = false, display = null }) {
   const headingRef = useRef(null)
@@ -56,7 +49,8 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose, read
         <div><dt>Accepted payment</dt><dd>{payments.length ? payments.join(', ') : 'Not given'}</dd></div>
         <div><dt>Location</dt><dd>{record.location || 'Not given'}</dd></div>
         <div><dt>Availability</dt><dd>{isSold ? 'Sold' : 'Available'}</dd></div>
-        <div><dt>Date listed</dt><dd>{formatDate(record.createdAt)}</dd></div>
+        <div><dt>Date listed</dt><dd>{formatDay(record.createdAt, 'long') || 'Unknown'}</dd></div>
+        {isSold && <div><dt>Date sold</dt><dd>{formatDay(record.soldAt, 'long') || 'Not recorded'}</dd></div>}
       </dl>
       <h3>Description</h3>
       <p className="detail-description">{record.description || 'No description added.'}</p>

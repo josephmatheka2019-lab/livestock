@@ -114,6 +114,8 @@ export const SORT_OPTIONS = [
   { value: 'name-asc', label: 'Animal type A–Z' },
   { value: 'name-desc', label: 'Animal type Z–A' },
 ]
+// Sellers can also look back at what sold most recently; buyers never see sold listings.
+export const SELLER_SORT_OPTIONS = [...SORT_OPTIONS, { value: 'sold-recent', label: 'Recently sold' }]
 
 // Listings have no separate name, so "name" is the animal type. Ties fall back
 // to newest first so the order stays predictable.
@@ -124,6 +126,8 @@ export function sortRecords(records, sort) {
     newest: newestFirst,
     'name-asc': (a, b) => byName(a, b) || newestFirst(a, b),
     'name-desc': (a, b) => byName(b, a) || newestFirst(a, b),
+    // Latest sale first; listings with no sale date (still available, or sold before dates were kept) go last.
+    'sold-recent': (a, b) => String(b.soldAt ?? '').localeCompare(String(a.soldAt ?? '')) || newestFirst(a, b),
   }[sort] ?? newestFirst
   return [...records].sort(compare)
 }
@@ -164,4 +168,21 @@ export function summarizeListings(records) {
     bucket[code] = Math.round(((bucket[code] ?? 0) + value) * 1000) / 1000
   }
   return summary
+}
+
+// Sets a listing's status and keeps its sale date in step: the date is stamped the moment it
+// goes from available to sold, and cleared if it goes back on sale. A listing that was already
+// sold keeps whatever date it had, including none for ones saved before dates were recorded.
+export function withStatus(record, status, now = new Date()) {
+  const next = { ...record, status }
+  const wasSold = (record.status ?? 'available') === 'sold'
+  if (status === 'sold' && !wasSold) next.soldAt = now.toISOString()
+  if (status !== 'sold') delete next.soldAt
+  return next
+}
+
+export function formatDay(iso, style = 'short') {
+  const date = new Date(iso)
+  if (!iso || Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: style, day: 'numeric' })
 }

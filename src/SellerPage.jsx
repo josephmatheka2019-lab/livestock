@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { readProfile, readRecords, writeProfile, writeRecords } from './storage.js'
-import { animalLabel, FIELD_IDS, matchesFilters, sortRecords, validateListing } from './listing.js'
+import { animalLabel, FIELD_IDS, matchesFilters, SELLER_SORT_OPTIONS, sortRecords, validateListing, withStatus } from './listing.js'
 import { DEFAULT_CURRENCY } from './currency.js'
 import { processPhoto } from './photo.js'
 import ConfirmDelete from './ConfirmDelete.jsx'
@@ -131,12 +131,13 @@ export default function SellerPage() {
     const fields = cleanForm(form)
     if (editingId) {
       setRecords((current) => current.map((record) =>
-        record.id === editingId ? { ...record, ...fields } : record,
+        // Keep the old status while merging, so withStatus can tell a listing is newly sold.
+        record.id === editingId ? withStatus({ ...record, ...fields, status: record.status }, fields.status) : record,
       ))
       setEditingId(null)
     } else {
       setRecords((current) => [
-        { id: crypto.randomUUID(), ...fields, createdAt: new Date().toISOString() },
+        withStatus({ id: crypto.randomUUID(), ...fields, status: undefined, createdAt: new Date().toISOString() }, fields.status),
         ...current,
       ])
     }
@@ -205,7 +206,7 @@ export default function SellerPage() {
     }
     setRecords((current) => current.map((record) =>
       record.id === id
-        ? { ...record, status: (record.status ?? 'available') === 'sold' ? 'available' : 'sold' }
+        ? withStatus(record, (record.status ?? 'available') === 'sold' ? 'available' : 'sold')
         : record,
     ))
   }
@@ -309,6 +310,7 @@ export default function SellerPage() {
         totalCount={records.length}
         filters={filters}
         sort={sort}
+        sortOptions={SELLER_SORT_OPTIONS}
         onSortChange={(event) => setSort(event.target.value)}
         isFiltering={isFiltering}
         onFilterChange={handleFilterChange}

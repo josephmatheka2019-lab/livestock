@@ -1,5 +1,5 @@
 import { moneyParts } from './currency.js'
-import { animalLabel, paymentLabels, termTags } from './listing.js'
+import { animalLabel, formatDay, paymentLabels, termTags } from './listing.js'
 
 // The photo and text of one listing, shared by the seller's list, the buyer's list
 // and the seller's "how buyers will see this" preview so they cannot drift apart.
@@ -24,6 +24,7 @@ export default function ListingSummary({ record, showStatus = false, display = n
           {animalLabel(record)}
           {showStatus && <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>}
         </h3>
+        {showStatus && isSold && record.soldAt && <p className="sold-date">Sold on {formatDay(record.soldAt)}</p>}
         <p className="listing-meta">
           {[
             record.quantity && `Quantity: ${record.quantity}`,

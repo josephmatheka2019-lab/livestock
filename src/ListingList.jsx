@@ -3,7 +3,7 @@ import ListingSummary from './ListingSummary.jsx'
 import { animalLabel, SORT_OPTIONS } from './listing.js'
 
 export default function ListingList({
-  records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange,
+  records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange, sortOptions = SORT_OPTIONS,
   onAddFirst, onView, onEdit, onToggleStatus, onDelete, readOnly = false, display = null,
 }) {
   return (
@@ -22,7 +22,7 @@ export default function ListingList({
           <div className="sort">
             <label htmlFor="sort-order">Sort by</label>
             <select id="sort-order" value={sort} onChange={onSortChange}>
-              {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </div>
         )}
