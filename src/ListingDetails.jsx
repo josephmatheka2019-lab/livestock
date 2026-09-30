@@ -9,7 +9,7 @@ function formatDate(iso) {
     : date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-export default function ListingDetails({ record, onEdit, onDelete, onClose }) {
+export default function ListingDetails({ record, onEdit, onDelete, onClose, readOnly = false }) {
   const headingRef = useRef(null)
 
   useEffect(() => {
@@ -61,8 +61,8 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose }) {
       <h3>Description</h3>
       <p className="detail-description">{record.description || 'No description added.'}</p>
       <div className="actions">
-        <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit</button>
-        <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete</button>
+        {!readOnly && <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit</button>}
+        {!readOnly && <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete</button>}
         <button type="button" className="secondary" onClick={onClose}>Close</button>
       </div>
     </section>

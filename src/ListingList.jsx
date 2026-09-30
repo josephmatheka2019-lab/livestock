@@ -4,15 +4,15 @@ import { animalLabel, paymentLabels, SORT_OPTIONS, termTags } from './listing.js
 
 export default function ListingList({
   records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange,
-  onAddFirst, onView, onEdit, onToggleStatus, onDelete,
+  onAddFirst, onView, onEdit, onToggleStatus, onDelete, readOnly = false,
 }) {
   return (
     <section className="records" aria-labelledby="records-heading">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">YOUR LOCAL DATA</p>
+          <p className="eyebrow">{readOnly ? 'AVAILABLE NOW' : 'YOUR LOCAL DATA'}</p>
           <h2 id="records-heading" tabIndex={-1}>
-            Listings{' '}
+            {readOnly ? 'Livestock for sale' : 'Listings'}{' '}
             <span className="count" aria-live="polite">
               {isFiltering ? `${records.length} of ${totalCount}` : totalCount}
             </span>
@@ -28,9 +28,14 @@ export default function ListingList({
         )}
       </div>
       {totalCount > 0 && (
-        <ListingFilters filters={filters} onChange={onFilterChange} onClear={onClearFilters} isFiltering={isFiltering} />
+        <ListingFilters filters={filters} onChange={onFilterChange} onClear={onClearFilters} isFiltering={isFiltering} showStatus={!readOnly} />
       )}
-      {totalCount === 0 ? (
+      {totalCount === 0 && readOnly ? (
+        <div className="empty">
+          <h3>No livestock is listed for sale yet.</h3>
+          <p>Nothing has been listed in this browser yet. Check back soon.</p>
+        </div>
+      ) : totalCount === 0 ? (
         <div className="empty">
           <h3>No livestock listings available yet.</h3>
           <p>Add your first listing to start keeping track of the animals you have for sale. Saved listings stay in this browser.</p>
@@ -39,7 +44,7 @@ export default function ListingList({
       ) : records.length === 0 ? (
         <div className="empty">
           <h3>No listings match these filters</h3>
-          <p>Try a different animal type, location or availability.</p>
+          <p>Try a different animal type or location.</p>
           <button type="button" className="secondary" onClick={onClearFilters}>Clear filters</button>
         </div>
       ) : (
@@ -58,7 +63,7 @@ export default function ListingList({
               <div className="record-copy">
                 <h3>
                   {animalLabel(record)}
-                  <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>
+                  {!readOnly && <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>}
                 </h3>
                 <p className="listing-meta">
                   {[
@@ -82,9 +87,11 @@ export default function ListingList({
               </div>
               <div className="record-actions">
                 <button type="button" className="secondary" onClick={() => onView(record.id)}>View<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
+                {!readOnly && <>
                 <button type="button" className="secondary" onClick={() => onToggleStatus(record.id)}>{isSold ? 'Mark available' : 'Mark as sold'}<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
                 <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
                 <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
+                </>}
               </div>
             </li>
             )
