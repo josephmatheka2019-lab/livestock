@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import AnimalTypeOptions from './AnimalTypeOptions.jsx'
 import { COMMON_CURRENCIES, OTHER_CURRENCIES } from './currency.js'
-import { MAX_DESCRIPTION, PAYMENT_METHODS, STATUSES } from './listing.js'
+import { MAX_AGE, MAX_BREED, MAX_DESCRIPTION, MAX_OTHER_ANIMAL, PAYMENT_METHODS, STATUSES } from './listing.js'
 
 function FieldError({ name, errors }) {
   if (!errors[name]) return null
@@ -33,6 +33,15 @@ export default function ListingForm({ form, errors, isEditing, onChange, onToggl
           <AnimalTypeOptions />
         </select>
         <FieldError name="animalType" errors={errors} />
+
+        {form.animalType === 'Other' && (
+          <>
+            <label htmlFor="listing-other-animal">Which animal? <span aria-hidden="true">*</span></label>
+            <input id="listing-other-animal" name="otherAnimal" value={form.otherAnimal} onChange={onChange}
+              maxLength={MAX_OTHER_ANIMAL} {...fieldA11y('otherAnimal')} />
+            <FieldError name="otherAnimal" errors={errors} />
+          </>
+        )}
 
         <div className="field-row">
           <div>
@@ -82,6 +91,41 @@ export default function ListingForm({ form, errors, isEditing, onChange, onToggl
           {STATUSES.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
         </select>
         <FieldError name="status" errors={errors} />
+
+        <div className="field-row">
+          <div>
+            <label htmlFor="listing-breed">Breed</label>
+            <input id="listing-breed" name="breed" value={form.breed} onChange={onChange} maxLength={MAX_BREED}
+              {...fieldA11y('breed')} />
+            <FieldError name="breed" errors={errors} />
+          </div>
+          <div>
+            <label htmlFor="listing-age">Age</label>
+            <input id="listing-age" name="age" value={form.age} onChange={onChange} maxLength={MAX_AGE}
+              placeholder="e.g. 8 months" {...fieldA11y('age')} />
+            <FieldError name="age" errors={errors} />
+          </div>
+        </div>
+
+        <label htmlFor="listing-weight">Average weight per animal (kg)</label>
+        <input id="listing-weight" name="weight" type="number" inputMode="decimal" min="0" step="any"
+          value={form.weight} onChange={onChange} {...fieldA11y('weight')} />
+        <FieldError name="weight" errors={errors} />
+
+        <fieldset className="checkbox-group">
+          <legend>Health and terms</legend>
+          {[
+            ['vaccinated', 'Animals are vaccinated'],
+            ['healthCertificate', 'Health certificate available'],
+            ['negotiable', 'Price is negotiable'],
+            ['delivery', 'Delivery offered'],
+          ].map(([name, label]) => (
+            <label className="check" key={name} htmlFor={`listing-${name}`}>
+              <input id={`listing-${name}`} name={name} type="checkbox" checked={form[name]} onChange={onChange} />
+              {label}
+            </label>
+          ))}
+        </fieldset>
 
         <fieldset className="checkbox-group" aria-describedby={errors.paymentMethods ? 'paymentMethods-error' : undefined}>
           <legend>Accepted payment methods <span aria-hidden="true">*</span></legend>

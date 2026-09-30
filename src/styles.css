@@ -107,3 +107,10 @@ button:disabled { opacity: .5; cursor: not-allowed; filter: none; }
 .check input[type="checkbox"] { width: 20px; height: 20px; min-height: 20px; flex-shrink: 0; accent-color: var(--teal); }
 .listing-payments { font-size: .85rem; margin-bottom: 4px !important; }
 .saving { color: #00534f; font-size: .85rem; }
+.listing-facts { font-size: .9rem; margin-bottom: 6px !important; }
+.tags { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0 0 8px; }
+.tags li { background: #eef3f6; border: 1px solid var(--line); border-radius: 999px; color: var(--navy); font-size: .75rem; font-weight: 700; padding: 3px 10px; }
+.confirm { border: 1px solid var(--line); border-radius: 14px; padding: 22px; max-width: min(420px, calc(100% - 32px)); box-shadow: 0 20px 50px rgb(16 42 67 / 25%); color: inherit; }
+.confirm::backdrop { background: rgb(16 42 67 / 55%); }
+.confirm h2 { margin-bottom: 8px; }
+.confirm p { color: var(--muted); line-height: 1.5; overflow-wrap: anywhere; }

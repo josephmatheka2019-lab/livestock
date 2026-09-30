@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { describeCurrency, formatMoney } from './currency.js'
-import { bulkSaving, paymentLabels } from './listing.js'
+import { animalLabel, bulkSaving, paymentLabels } from './listing.js'
 
 function formatDate(iso) {
   const date = new Date(iso)
@@ -27,12 +27,19 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose }) {
     <section className="panel details" aria-labelledby="details-heading">
       <p className="eyebrow">LISTING DETAILS</p>
       <h2 id="details-heading" ref={headingRef} tabIndex={-1}>
-        {record.animalType}
+        {animalLabel(record)}
         <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>
       </h2>
-      {record.photo && <img className="detail-photo" src={record.photo} alt={`Photo of ${record.animalType} listing`} />}
+      {record.photo && <img className="detail-photo" src={record.photo} alt={`Photo of ${animalLabel(record)} listing`} />}
       <dl className="detail-grid">
-        <div><dt>Animal type</dt><dd>{record.animalType}</dd></div>
+        <div><dt>Animal type</dt><dd>{record.animalType === 'Other' ? `Other – ${animalLabel(record)}` : record.animalType}</dd></div>
+        <div><dt>Breed</dt><dd>{record.breed || 'Not given'}</dd></div>
+        <div><dt>Age</dt><dd>{record.age || 'Not given'}</dd></div>
+        <div><dt>Average weight</dt><dd>{record.weight ? `${record.weight} kg per animal` : 'Not given'}</dd></div>
+        <div><dt>Vaccinated</dt><dd>{record.vaccinated ? 'Yes' : 'Not stated'}</dd></div>
+        <div><dt>Health certificate</dt><dd>{record.healthCertificate ? 'Available' : 'Not stated'}</dd></div>
+        <div><dt>Price negotiable</dt><dd>{record.negotiable ? 'Yes' : 'No'}</dd></div>
+        <div><dt>Delivery</dt><dd>{record.delivery ? 'Offered' : 'Not offered'}</dd></div>
         <div><dt>Quantity</dt><dd>{record.quantity || 'Not given'}</dd></div>
         <div><dt>Price per animal</dt><dd>{record.price ? formatMoney(record.price, record.currency) : 'Not given'}</dd></div>
         <div><dt>Total at full price</dt><dd>{hasTotal ? formatMoney(quantity * price, record.currency) : 'Not available'}</dd></div>

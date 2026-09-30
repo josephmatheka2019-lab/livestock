@@ -13,6 +13,14 @@ export const ANIMAL_GROUPS = [
 export const ANIMAL_TYPES = [...ANIMAL_GROUPS.flatMap((group) => group.types), 'Other']
 
 export const MAX_DESCRIPTION = 500
+export const MAX_OTHER_ANIMAL = 60
+export const MAX_BREED = 60
+export const MAX_AGE = 40
+
+// The name shown for a listing: the typed-in animal when "Other" was chosen.
+export function animalLabel(record) {
+  return record.animalType === 'Other' && record.otherAnimal ? record.otherAnimal : record.animalType
+}
 export const STATUSES = [
   { value: 'available', label: 'Available' },
   { value: 'sold', label: 'Sold' },
@@ -26,12 +34,16 @@ export const PAYMENT_METHODS = [
 // Field order matches the form, so the first error is the first field to fix.
 export const FIELD_IDS = {
   animalType: 'listing-animal-type',
+  otherAnimal: 'listing-other-animal',
   quantity: 'listing-quantity',
   currency: 'listing-currency',
   price: 'listing-price',
   bulkPrice: 'listing-bulk-price',
   location: 'listing-location',
   status: 'listing-status',
+  breed: 'listing-breed',
+  age: 'listing-age',
+  weight: 'listing-weight',
   paymentMethods: 'listing-payment-mpesa',
   description: 'listing-description',
   photo: 'listing-photo',
@@ -48,6 +60,12 @@ export function validateListing(form) {
 
   if (!form.animalType) errors.animalType = 'Select an animal type.'
 
+  if (form.animalType === 'Other') {
+    const other = form.otherAnimal.trim()
+    if (!other) errors.otherAnimal = 'Type the name of the animal.'
+    else if (other.length > MAX_OTHER_ANIMAL) errors.otherAnimal = `Keep the animal name to ${MAX_OTHER_ANIMAL} characters or fewer.`
+  }
+
   if (!quantity) errors.quantity = 'Enter the quantity.'
   else if (!/^\d+$/.test(quantity) || Number(quantity) < 1) errors.quantity = 'Quantity must be a whole number greater than 0.'
 
@@ -61,6 +79,14 @@ export function validateListing(form) {
   if (!form.location.trim()) errors.location = 'Enter the location.'
 
   if (!STATUSES.some((status) => status.value === form.status)) errors.status = 'Select whether the listing is available or sold.'
+
+  if (form.breed.trim().length > MAX_BREED) errors.breed = `Keep the breed to ${MAX_BREED} characters or fewer.`
+  if (form.age.trim().length > MAX_AGE) errors.age = `Keep the age to ${MAX_AGE} characters or fewer.`
+
+  const weight = form.weight.trim()
+  if (weight && (!/^\d+(\.\d{1,2})?$/.test(weight) || Number(weight) <= 0)) {
+    errors.weight = 'Weight must be a number greater than 0, such as 35 or 2.5.'
+  }
 
   const validMethods = PAYMENT_METHODS.map((method) => method.value)
   if (!form.paymentMethods.length || !form.paymentMethods.every((method) => validMethods.includes(method))) {
@@ -93,7 +119,7 @@ export const SORT_OPTIONS = [
 // to newest first so the order stays predictable.
 export function sortRecords(records, sort) {
   const newestFirst = (a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''))
-  const byName = (a, b) => a.animalType.localeCompare(b.animalType, undefined, { sensitivity: 'base' })
+  const byName = (a, b) => animalLabel(a).localeCompare(animalLabel(b), undefined, { sensitivity: 'base' })
   const compare = {
     newest: newestFirst,
     'name-asc': (a, b) => byName(a, b) || newestFirst(a, b),
@@ -112,4 +138,14 @@ export function bulkSaving(record) {
   const bulk = Number(record.bulkPrice)
   if (!record.bulkPrice || Number.isNaN(full) || Number.isNaN(bulk)) return 0
   return bulk < full ? full - bulk : 0
+}
+
+// Short labels for the yes/no details a seller ticked.
+export function termTags(record) {
+  return [
+    record.vaccinated && 'Vaccinated',
+    record.healthCertificate && 'Health certificate',
+    record.negotiable && 'Price negotiable',
+    record.delivery && 'Delivery offered',
+  ].filter(Boolean)
 }
