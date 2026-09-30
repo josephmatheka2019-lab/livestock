@@ -4,7 +4,7 @@ import { animalLabel, SORT_OPTIONS } from './listing.js'
 
 export default function ListingList({
   records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange, sortOptions = SORT_OPTIONS,
-  onAddFirst, onView, onEdit, onToggleStatus, onDelete, readOnly = false, display = null, filtersNode = null,
+  onAddFirst, onView, onEdit, onToggleStatus, onDelete, readOnly = false, display = null, filtersNode = null, seller = null,
 }) {
   return (
     <section className="records" aria-labelledby="records-heading">
@@ -53,7 +53,7 @@ export default function ListingList({
             const isSold = record.status === 'sold'
             return (
             <li className="record" key={record.id}>
-              <ListingSummary record={record} showStatus={!readOnly} display={display} />
+              <ListingSummary record={record} showStatus={!readOnly} display={display} buyerView={readOnly} seller={seller} />
               <div className="record-actions">
                 <button type="button" className="secondary" onClick={() => onView(record.id)}>View<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
                 {!readOnly && <>

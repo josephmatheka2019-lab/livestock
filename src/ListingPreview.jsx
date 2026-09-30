@@ -10,7 +10,8 @@ export default function ListingPreview({ form, profile }) {
       <summary>Preview how buyers will see this</summary>
       {form.animalType ? (
         <div className="record preview-card">
-          <ListingSummary record={form} />
+          {/* A listing posted now is new, so the preview shows the tag buyers will see. */}
+          <ListingSummary record={{ ...form, createdAt: new Date().toISOString() }} buyerView seller={profile} />
         </div>
       ) : (
         <p className="hint">Choose an animal type to see the preview.</p>

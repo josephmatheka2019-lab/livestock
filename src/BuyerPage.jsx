@@ -109,6 +109,7 @@ export default function BuyerPage() {
       <ListingList
         readOnly
         display={display}
+        seller={seller}
         records={visible}
         totalCount={available.length}
         filters={filters}

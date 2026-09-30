@@ -1,9 +1,10 @@
-import { moneyParts } from './currency.js'
-import { animalLabel, formatDay, paymentLabels, termTags } from './listing.js'
+import { moneyLabel, moneyParts } from './currency.js'
+import { animalLabel, bulkSaving, formatDay, isNewListing, paymentLabels, termTags } from './listing.js'
 
 // The photo and text of one listing, shared by the seller's list, the buyer's list
 // and the seller's "how buyers will see this" preview so they cannot drift apart.
-export default function ListingSummary({ record, showStatus = false, display = null }) {
+// `buyerView` adds what a buyer browsing the list sees: who is selling, a New tag and the bulk saving.
+export default function ListingSummary({ record, showStatus = false, display = null, buyerView = false, seller = null }) {
   const isSold = record.status === 'sold'
   const facts = [
     record.breed && `Breed: ${record.breed}`,
@@ -14,6 +15,9 @@ export default function ListingSummary({ record, showStatus = false, display = n
   const payments = paymentLabels(record.paymentMethods)
   const price = moneyParts(record.price, record.currency, display)
   const bulk = moneyParts(record.bulkPrice, record.currency, display)
+  const isNew = buyerView && isNewListing(record)
+  const saving = buyerView ? bulkSaving(record) : 0
+  const sellerName = buyerView ? seller?.businessName?.trim() : ''
   const withOriginal = (parts, suffix) => `${parts.text} ${suffix}${parts.original ? ` (${parts.original})` : ''}`
 
   return (
@@ -23,7 +27,13 @@ export default function ListingSummary({ record, showStatus = false, display = n
         <h3>
           {animalLabel(record)}
           {showStatus && <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>}
+          {isNew && <span className="badge badge-new">New</span>}
         </h3>
+        {sellerName && (
+          <p className="listing-seller">
+            Sold by <strong>{sellerName}</strong>{seller.location ? ` · ${seller.location}` : ''}
+          </p>
+        )}
         {showStatus && isSold && record.soldAt && <p className="sold-date">Sold on {formatDay(record.soldAt)}</p>}
         <p className="listing-meta">
           {[
@@ -33,6 +43,7 @@ export default function ListingSummary({ record, showStatus = false, display = n
             record.location && `Location: ${record.location}`,
           ].filter(Boolean).join(' · ')}
         </p>
+        {saving > 0 && <p className="saving-line">Save {moneyLabel(saving, record.currency, display)} on the whole lot</p>}
         {facts.length > 0 && <p className="listing-facts">{facts.join(' · ')}</p>}
         {tags.length > 0 && (
           <ul className="tags" aria-label="Terms">

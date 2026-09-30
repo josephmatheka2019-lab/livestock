@@ -216,3 +216,7 @@ a.button.button-whatsapp { background: #1b7a43; }
 @media (max-width: 520px) {
   .buyer-filters, .more-filters { grid-template-columns: 1fr; }
 }
+.badge-new { background: #fde7c4; color: #6b3603; }
+.listing-seller { color: var(--muted); font-size: .9rem; margin: -2px 0 6px; overflow-wrap: anywhere; }
+.listing-seller strong { color: var(--navy); }
+.record-copy .saving-line { color: #00534f; font-weight: 700; font-size: .9rem; margin: 0 0 6px; }

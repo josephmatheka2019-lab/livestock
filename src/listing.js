@@ -290,3 +290,14 @@ export function matchesBuyerFilters(record, filters, display = null) {
 
   return true
 }
+
+// A listing counts as new for its first week. A date slightly in the future (a clock a minute
+// fast) still counts; a date further ahead, or a missing or damaged one, does not.
+export const NEW_LISTING_DAYS = 7
+
+export function isNewListing(record, now = Date.now()) {
+  const posted = Date.parse(record.createdAt)
+  if (Number.isNaN(posted)) return false
+  const age = now - posted
+  return age >= -60 * 1000 && age <= NEW_LISTING_DAYS * 24 * 60 * 60 * 1000
+}
