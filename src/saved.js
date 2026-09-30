@@ -1,4 +1,4 @@
-import { animalLabel } from './listing.js'
+import { animalLabel, listingState } from './listing.js'
 
 // A buyer's saved listings: [{ id, savedAt, label }], newest first. The label is kept so a
 // listing that has since been sold or deleted can still be named on the Saved page.
@@ -40,7 +40,8 @@ export function savedView(list, records) {
     .sort((a, b) => b.savedAt.localeCompare(a.savedAt))
     .map((entry) => {
       const record = records.find((item) => item.id === entry.id) ?? null
-      const available = Boolean(record) && (record.status ?? 'available') !== 'sold'
-      return { entry, record, available, label: record ? animalLabel(record) : entry.label }
+      // 'available', 'paused' or 'sold' while the listing exists; 'removed' once the seller deletes it.
+      const state = record ? listingState(record) : 'removed'
+      return { entry, record, state, available: state === 'available', label: record ? animalLabel(record) : entry.label }
     })
 }

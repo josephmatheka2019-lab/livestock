@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { readProfile, readRecords, writeProfile, writeRecords } from './storage.js'
-import { animalLabel, FIELD_IDS, matchesFilters, SELLER_SORT_OPTIONS, sortRecords, validateListing, withStatus } from './listing.js'
+import {
+  animalLabel, FIELD_IDS, matchesFilters, SELLER_SORT_OPTIONS, sortRecords, validateListing, withPaused, withStatus,
+} from './listing.js'
 import { DEFAULT_CURRENCY } from './currency.js'
 import { processPhoto } from './photo.js'
 import ConfirmDelete from './ConfirmDelete.jsx'
@@ -211,6 +213,17 @@ export default function SellerPage() {
     ))
   }
 
+  // Pausing hides a listing from buyers without selling or deleting it; resuming puts it back.
+  function togglePaused(id) {
+    const target = records.find((record) => record.id === id)
+    if (!target || target.status === 'sold') return
+    const pausing = !target.paused
+    announce(pausing
+      ? `${animalLabel(target)} listing paused. Buyers cannot see it.`
+      : `${animalLabel(target)} listing resumed. Buyers can see it again.`)
+    setRecords((current) => current.map((record) => (record.id === id ? withPaused(record, pausing) : record)))
+  }
+
   function handleFilterChange(event) {
     const { name, value } = event.target
     setFilters((current) => ({ ...current, [name]: value }))
@@ -319,6 +332,7 @@ export default function SellerPage() {
         onView={setSelectedId}
         onEdit={startEdit}
         onToggleStatus={toggleStatus}
+        onTogglePaused={togglePaused}
         onDelete={requestDelete}
       />
       <footer><p>Listings are saved in this browser only. Browser storage is local to this origin and is not a secure or shared database.</p></footer>

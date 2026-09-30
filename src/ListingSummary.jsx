@@ -26,7 +26,7 @@ export default function ListingSummary({ record, showStatus = false, display = n
       <div className="record-copy">
         <h3>
           {animalLabel(record)}
-          {showStatus && <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>}
+          {showStatus && <span className={`badge ${isSold ? 'badge-sold' : record.paused ? 'badge-paused' : 'badge-available'}`}>{isSold ? 'Sold' : record.paused ? 'Paused' : 'Available'}</span>}
           {isNew && <span className="badge badge-new">New</span>}
         </h3>
         {sellerName && (

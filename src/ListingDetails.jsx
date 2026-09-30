@@ -21,7 +21,7 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose, read
       <p className="eyebrow">LISTING DETAILS</p>
       <h2 id="details-heading" ref={headingRef} tabIndex={-1}>
         {animalLabel(record)}
-        <span className={`badge ${isSold ? 'badge-sold' : 'badge-available'}`}>{isSold ? 'Sold' : 'Available'}</span>
+        <span className={`badge ${isSold ? 'badge-sold' : record.paused ? 'badge-paused' : 'badge-available'}`}>{isSold ? 'Sold' : record.paused ? 'Paused' : 'Available'}</span>
       </h2>
       {record.photo && <img className="detail-photo" src={record.photo} alt={`Photo of ${animalLabel(record)} listing`} />}
       <dl className="detail-grid">
@@ -48,7 +48,10 @@ export default function ListingDetails({ record, onEdit, onDelete, onClose, read
         <div><dt>Priced in</dt><dd>{describeCurrency(record.currency ?? 'KES')}</dd></div>
         <div><dt>Accepted payment</dt><dd>{payments.length ? payments.join(', ') : 'Not given'}</dd></div>
         <div><dt>Location</dt><dd>{record.location || 'Not given'}</dd></div>
-        <div><dt>Availability</dt><dd>{isSold ? 'Sold' : 'Available'}</dd></div>
+        <div><dt>Availability</dt><dd>{isSold ? 'Sold' : record.paused ? 'Paused' : 'Available'}</dd></div>
+        {!readOnly && !isSold && (
+          <div><dt>Visible to buyers</dt><dd>{record.paused ? 'No – paused' : 'Yes'}</dd></div>
+        )}
         <div><dt>Date listed</dt><dd>{formatDay(record.createdAt, 'long') || 'Unknown'}</dd></div>
         {isSold && <div><dt>Date sold</dt><dd>{formatDay(record.soldAt, 'long') || 'Not recorded'}</dd></div>}
       </dl>

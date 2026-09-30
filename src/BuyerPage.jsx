@@ -9,7 +9,8 @@ import SaveButton from './SaveButton.jsx'
 import SavedList from './SavedList.jsx'
 import SellerContact from './SellerContact.jsx'
 import {
-  emptyBuyerFilters, isBuyerFiltering, matchesBuyerFilters, PRICE_SORT_OPTIONS, SORT_OPTIONS, sortRecords,
+  emptyBuyerFilters, isBuyerFiltering, isListedForBuyers, matchesBuyerFilters, PRICE_SORT_OPTIONS, SORT_OPTIONS,
+  sortRecords,
 } from './listing.js'
 import { loadRates } from './rates.js'
 import { emptyBuyerProfile, isBuyerProfileComplete } from './buyerProfile.js'
@@ -98,8 +99,8 @@ export default function BuyerPage() {
   // Only convert once the rates are in; until then (or if they fail) buyers see the sellers' own prices.
   const display = currency && fx.status === 'ready' ? { currency, rates: fx.rates } : null
 
-  // Sold listings are not for sale, so buyers never see them.
-  const available = records.filter((record) => (record.status ?? 'available') !== 'sold')
+  // Sold and paused listings are not for sale, so buyers never see them.
+  const available = records.filter(isListedForBuyers)
   const isFiltering = isBuyerFiltering(filters)
   // Price sorting and price limits need a converted currency; without one they are not offered.
   const sortOptions = display ? [...SORT_OPTIONS, ...PRICE_SORT_OPTIONS] : SORT_OPTIONS

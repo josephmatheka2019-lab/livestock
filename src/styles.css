@@ -224,3 +224,4 @@ a.button.button-whatsapp { background: #1b7a43; }
 .record-gone { background: #f7f9fa; border-style: dashed; }
 .record-gone .record-copy p { color: var(--muted); line-height: 1.5; }
 #saved-heading:focus { outline: none; }
+.badge-paused { background: #fff1c9; color: #6b4a00; }

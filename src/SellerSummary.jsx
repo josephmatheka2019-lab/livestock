@@ -23,6 +23,9 @@ export default function SellerSummary({ records }) {
       <h2 id="summary-heading">Your listings</h2>
       <dl className="stat-grid">
         <div className="stat"><dt>Available</dt><dd className="stat-number">{summary.available}</dd></div>
+        {summary.paused > 0 && (
+          <div className="stat"><dt>Paused</dt><dd className="stat-number">{summary.paused}</dd></div>
+        )}
         <div className="stat"><dt>Sold</dt><dd className="stat-number">{summary.sold}</dd></div>
         <div className="stat"><dt>Value of available stock</dt><dd><ValueLines value={summary.availableValue} /></dd></div>
         <div className="stat"><dt>Value of sold stock</dt><dd><ValueLines value={summary.soldValue} /></dd></div>

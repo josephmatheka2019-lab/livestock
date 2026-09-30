@@ -1,5 +1,5 @@
 import AnimalTypeOptions from './AnimalTypeOptions.jsx'
-import { STATUSES } from './listing.js'
+import { FILTER_STATUSES } from './listing.js'
 
 export default function ListingFilters({ filters, onChange, onClear, isFiltering, showStatus = true }) {
   return (
@@ -20,7 +20,7 @@ export default function ListingFilters({ filters, onChange, onClear, isFiltering
         <label htmlFor="filter-status">Availability</label>
         <select id="filter-status" name="status" value={filters.status} onChange={onChange}>
           <option value="">All</option>
-          {STATUSES.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
+          {FILTER_STATUSES.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
         </select>
       </div>}
       <button type="button" className="secondary" onClick={onClear} disabled={!isFiltering}>Clear filters</button>

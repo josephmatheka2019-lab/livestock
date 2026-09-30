@@ -1,5 +1,11 @@
 import ListingSummary from './ListingSummary.jsx'
 
+const GONE_TEXT = {
+  sold: 'This listing has been sold, so it cannot be bought now. It will come back here if the seller puts it on sale again.',
+  paused: 'The seller has paused this listing for now. It will come back here when they put it back on sale.',
+  removed: 'The seller has taken this listing down.',
+}
+
 // The buyer's saved listings. One that has been sold or taken down stays on the list, named and
 // marked "No longer available", so the buyer is told rather than left wondering where it went.
 export default function SavedList({ items, display, seller, onView, onRemove, onBrowse }) {
@@ -22,19 +28,18 @@ export default function SavedList({ items, display, seller, onView, onRemove, on
         </div>
       ) : (
         <ul className="record-list">
-          {items.map(({ entry, record, available, label }) => (
+          {items.map(({ entry, record, state, available, label }) => (
             <li className={`record${available ? '' : ' record-gone'}`} key={entry.id}>
               {available ? (
                 <ListingSummary record={record} buyerView seller={seller} display={display} />
               ) : (
                 <div className="record-main">
                   <div className="record-copy">
-                    <h3>{label}<span className="badge badge-sold">No longer available</span></h3>
-                    <p>
-                      {record
-                        ? 'This listing has been sold, so it cannot be bought now. It will come back here if the seller puts it on sale again.'
-                        : 'The seller has taken this listing down.'}
-                    </p>
+                    <h3>
+                      {label}
+                      <span className="badge badge-sold">{state === 'paused' ? 'Paused' : 'No longer available'}</span>
+                    </h3>
+                    <p>{GONE_TEXT[state]}</p>
                   </div>
                 </div>
               )}

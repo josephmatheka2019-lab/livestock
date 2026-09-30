@@ -105,7 +105,7 @@ export function validateListing(form) {
 export function matchesFilters(record, filters) {
   const location = filters.location.trim().toLowerCase()
   if (filters.animalType && record.animalType !== filters.animalType) return false
-  if (filters.status && (record.status ?? 'available') !== filters.status) return false
+  if (filters.status && listingState(record) !== filters.status) return false
   if (location && !(record.location ?? '').toLowerCase().includes(location)) return false
   return true
 }
@@ -169,13 +169,15 @@ export function termTags(record) {
 // Numbers for the seller's dashboard. Value is quantity x price per animal, added up
 // separately for each currency because prices are never mixed across currencies.
 export function summarizeListings(records) {
-  const summary = { total: records.length, available: 0, sold: 0, availableValue: {}, soldValue: {} }
+  const summary = { total: records.length, available: 0, paused: 0, sold: 0, availableValue: {}, soldValue: {} }
   for (const record of records) {
-    const isSold = record.status === 'sold'
-    summary[isSold ? 'sold' : 'available'] += 1
+    const state = listingState(record)
+    summary[state] += 1
+    // A paused listing is not for sale right now, so its stock is left out of both values.
+    if (state === 'paused') continue
     const value = Number(record.quantity) * Number(record.price)
     if (!Number.isFinite(value)) continue
-    const bucket = isSold ? summary.soldValue : summary.availableValue
+    const bucket = state === 'sold' ? summary.soldValue : summary.availableValue
     const code = record.currency ?? 'KES'
     bucket[code] = Math.round(((bucket[code] ?? 0) + value) * 1000) / 1000
   }
@@ -190,8 +192,32 @@ export function withStatus(record, status, now = new Date()) {
   const wasSold = (record.status ?? 'available') === 'sold'
   if (status === 'sold' && !wasSold) next.soldAt = now.toISOString()
   if (status !== 'sold') delete next.soldAt
+  // A sold listing is not "paused": selling it ends the pause, so it does not reappear paused later.
+  if (status === 'sold') delete next.paused
   return next
 }
+
+// Where a listing stands: on sale, paused by the seller (hidden from buyers but kept), or sold.
+// Listings saved before pausing existed have no flag, so they count as on sale.
+export function listingState(record) {
+  if (record.status === 'sold') return 'sold'
+  return record.paused ? 'paused' : 'available'
+}
+
+// Buyers only see listings that are on sale.
+export function isListedForBuyers(record) {
+  return listingState(record) === 'available'
+}
+
+export function withPaused(record, paused) {
+  const next = { ...record }
+  if (paused) next.paused = true
+  else delete next.paused
+  return next
+}
+
+// The choices in the seller's availability filter: the two statuses plus Paused.
+export const FILTER_STATUSES = [...STATUSES, { value: 'paused', label: 'Paused' }]
 
 export function formatDay(iso, style = 'short') {
   const date = new Date(iso)

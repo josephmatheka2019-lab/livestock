@@ -5,7 +5,7 @@ import { animalLabel, SORT_OPTIONS } from './listing.js'
 
 export default function ListingList({
   records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange, sortOptions = SORT_OPTIONS,
-  onAddFirst, onView, onEdit, onToggleStatus, onDelete, readOnly = false, display = null, filtersNode = null, seller = null, savedIds = null, onToggleSaved = null,
+  onAddFirst, onView, onEdit, onToggleStatus, onTogglePaused, onDelete, readOnly = false, display = null, filtersNode = null, seller = null, savedIds = null, onToggleSaved = null,
 }) {
   return (
     <section className="records" aria-labelledby="records-heading">
@@ -60,6 +60,11 @@ export default function ListingList({
                 {onToggleSaved && <SaveButton record={record} saved={savedIds.has(record.id)} onToggle={onToggleSaved} />}
                 {!readOnly && <>
                 <button type="button" className="secondary" onClick={() => onToggleStatus(record.id)}>{isSold ? 'Mark available' : 'Mark as sold'}<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
+                {!isSold && (
+                  <button type="button" className="secondary" onClick={() => onTogglePaused(record.id)}>
+                    {record.paused ? 'Resume' : 'Pause'}<span className="visually-hidden"> {animalLabel(record)} listing</span>
+                  </button>
+                )}
                 <button type="button" className="secondary" onClick={() => onEdit(record)}>Edit<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
                 <button type="button" className="danger" onClick={() => onDelete(record.id)}>Delete<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
                 </>}
