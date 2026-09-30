@@ -38,3 +38,12 @@ export function validateListing(form) {
 
   return errors
 }
+
+// Listings saved before availability existed have no status, so they count as available.
+export function matchesFilters(record, filters) {
+  const location = filters.location.trim().toLowerCase()
+  if (filters.animalType && record.animalType !== filters.animalType) return false
+  if (filters.status && (record.status ?? 'available') !== filters.status) return false
+  if (location && !(record.location ?? '').toLowerCase().includes(location)) return false
+  return true
+}

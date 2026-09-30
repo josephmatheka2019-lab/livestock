@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { readRecords, writeRecords } from './storage.js'
-import { FIELD_IDS, validateListing } from './listing.js'
+import { FIELD_IDS, matchesFilters, validateListing } from './listing.js'
 import ListingForm from './ListingForm.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 
+const emptyFilters = { animalType: '', location: '', status: '' }
 const emptyForm = { animalType: '', quantity: '', price: '', location: '', status: 'available', description: '' }
 
 function cleanForm(form) {
@@ -24,6 +25,7 @@ export default function App() {
   const [editingId, setEditingId] = useState(null)
   const [errors, setErrors] = useState({})
   const [selectedId, setSelectedId] = useState(null)
+  const [filters, setFilters] = useState(emptyFilters)
   const [storageWarning, setStorageWarning] = useState(false)
 
   useEffect(() => {
@@ -93,6 +95,11 @@ export default function App() {
     ))
   }
 
+  function handleFilterChange(event) {
+    const { name, value } = event.target
+    setFilters((current) => ({ ...current, [name]: value }))
+  }
+
   function focusForm() {
     document.getElementById('listing-animal-type')?.focus()
   }
@@ -103,6 +110,8 @@ export default function App() {
     if (selectedId === id) setSelectedId(null)
   }
 
+  const isFiltering = Object.values(filters).some((value) => value.trim() !== '')
+  const visibleRecords = records.filter((record) => matchesFilters(record, filters))
   const selectedRecord = records.find((record) => record.id === selectedId)
 
   return (
@@ -128,7 +137,19 @@ export default function App() {
         <ListingDetails record={selectedRecord} onEdit={startEdit} onDelete={deleteRecord} onClose={() => setSelectedId(null)} />
       )}
 
-      <ListingList records={records} onAddFirst={focusForm} onView={setSelectedId} onEdit={startEdit} onToggleStatus={toggleStatus} onDelete={deleteRecord} />
+      <ListingList
+        records={visibleRecords}
+        totalCount={records.length}
+        filters={filters}
+        isFiltering={isFiltering}
+        onFilterChange={handleFilterChange}
+        onClearFilters={() => setFilters(emptyFilters)}
+        onAddFirst={focusForm}
+        onView={setSelectedId}
+        onEdit={startEdit}
+        onToggleStatus={toggleStatus}
+        onDelete={deleteRecord}
+      />
       <footer><p>Listings are saved in this browser only. Browser storage is local to this origin and is not a secure or shared database.</p></footer>
     </main>
   )
