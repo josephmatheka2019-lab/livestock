@@ -144,3 +144,34 @@ export function writeAdmin(state) {
   }
 }
 
+const ADMIN_SESSION_KEY = 'livestock-admin-session'
+
+// The demo admin sign-in. sessionStorage is used on purpose: the session lasts for this tab,
+// dies with it, and never touches other tabs. Checked in the browser — a demonstration only.
+export function readAdminSession() {
+  try {
+    const saved = JSON.parse(window.sessionStorage.getItem(ADMIN_SESSION_KEY))
+    return saved && typeof saved === 'object' && typeof saved.email === 'string' ? saved : null
+  } catch {
+    return null
+  }
+}
+
+export function writeAdminSession(session) {
+  try {
+    window.sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session))
+    return true
+  } catch {
+    // Storage blocked: the session still works until the page is refreshed.
+    return false
+  }
+}
+
+export function clearAdminSession() {
+  try {
+    window.sessionStorage.removeItem(ADMIN_SESSION_KEY)
+  } catch {
+    // Nothing to clean up if storage is blocked.
+  }
+}
+

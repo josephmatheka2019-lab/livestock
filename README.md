@@ -65,7 +65,7 @@ To build and preview a production version:
 | `#/seller` | The seller page |
 | `#/buyer` | The buyer page |
 | `#/seller/login`, `#/buyer/login` | Sign-in and sign-up pages. Built, but not linked yet and switched off until accounts are connected |
-| `#/admin` | The admin page: transactions and fees, escrow holds, suspend / terminate accounts. **No login yet — protect it before going public** |
+| `#/admin` | The admin page: transactions and fees, escrow holds, suspend / terminate accounts. Behind a **demo sign-in** (credentials shown on the screen) — replace with a real admin account before going public |
 
 Any other address shows the first screen.
 
@@ -89,6 +89,9 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 - **There are no accounts yet.** Sellers and buyers are not signed in, so the roles are a convenience, not
   security. Phone numbers are hidden on screen on both sides, but they are still in the browser's
   storage. The database rules that enforce this properly are written (see below) but not connected.
+- **The admin sign-in is a demonstration.** The credentials are shown on the screen and the check
+  runs in the browser: it stops a casual visitor but is not security. A real admin account must
+  replace it before the site goes public.
 - **No real payments.** Payment methods are recorded on the order, and paying in the app is a
   demonstration: the app takes no money. Cash is paid to the seller on delivery.
 - **Converted prices are approximate.** They use a free daily rates service, fetched only when a buyer
@@ -128,6 +131,7 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 | `livestock-saved-listings` | The buyer's saved listings |
 | `livestock-orders` | The orders buyers have placed, and their status |
 | `livestock-admin` | Admin state: suspended / terminated accounts and payments held in escrow |
+| `livestock-admin-session` *(this tab only)* | The demo admin sign-in; closing the tab signs you out |
 | `livestock-display-currency` | The currency the buyer chose to see prices in |
 | `livestock-exchange-rates` | Today's exchange rates, kept for 12 hours |
 

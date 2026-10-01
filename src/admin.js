@@ -14,6 +14,17 @@ import { ONLINE_METHODS } from './orders.js'
 export const ACCOUNT_STATUSES = ['active', 'suspended', 'terminated']
 export const ACCOUNT_STATUS_LABELS = { active: 'Active', suspended: 'Suspended', terminated: 'Terminated' }
 
+// The demo admin credentials, shown on the sign-in screen. The check runs in the browser, so
+// this keeps out casual visitors only — it is not security. A real admin account (Supabase,
+// see docx/Accounts and Backend Plan.md) replaces it before the site goes live.
+export const DEMO_ADMIN_EMAIL = 'admin@livestock.demo'
+export const DEMO_ADMIN_PASSWORD = 'demo1234'
+
+export function checkAdminCredentials(email, password) {
+  return String(email ?? '').trim().toLowerCase() === DEMO_ADMIN_EMAIL
+    && String(password ?? '') === DEMO_ADMIN_PASSWORD
+}
+
 export const emptyAdminState = () => ({ accounts: {}, holds: {} })
 
 // The platform's cut of an in-app payment (M-Pesa or card), as agreed in the monetisation plan.

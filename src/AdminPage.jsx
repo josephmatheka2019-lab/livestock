@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import AdminLogin from './AdminLogin.jsx'
 import ConfirmDialog from './ConfirmDialog.jsx'
 import OrderCard from './OrderCard.jsx'
 import SiteHeader from './SiteHeader.jsx'
@@ -8,7 +9,10 @@ import {
   PLATFORM_FEE_RATE, releasePayment, setAccountStatus, summarizeForAdmin,
 } from './admin.js'
 import { sortOrders } from './orders.js'
-import { readAdmin, readBuyerProfile, readOrders, readProfile, writeAdmin } from './storage.js'
+import {
+  clearAdminSession, readAdmin, readAdminSession, readBuyerProfile, readOrders, readProfile, writeAdmin,
+  writeAdminSession,
+} from './storage.js'
 
 function ValueLines({ value }) {
   const codes = Object.keys(value)
@@ -21,9 +25,26 @@ function ValueLines({ value }) {
 }
 
 // The platform's own view: every order with its fee, the money being held in escrow, and the
-// power to suspend or terminate an account. Reached at #/admin — it is not linked from the
-// buyer or seller pages, and it carries no login yet (see the README limits).
+// power to suspend or terminate an account. Reached at #/admin — the demo sign-in gates it,
+// and it is not linked from the buyer or seller pages (see the README limits).
 export default function AdminPage() {
+  const [session, setSession] = useState(() => readAdminSession())
+
+  function signIn(next) {
+    writeAdminSession(next)
+    setSession(next)
+  }
+
+  function signOut() {
+    clearAdminSession()
+    setSession(null)
+  }
+
+  if (!session) return <AdminLogin onSignIn={signIn} />
+  return <AdminDashboard session={session} onSignOut={signOut} />
+}
+
+function AdminDashboard({ session, onSignOut }) {
   const [orders, setOrders] = useState(() => sortOrders(readOrders() ?? []))
   const [admin, setAdmin] = useState(() => cleanAdminState(readAdmin()))
   const [error, setError] = useState('')
@@ -135,9 +156,18 @@ export default function AdminPage() {
         </p>
       </div>
 
+      <section className="panel summary admin-session" aria-label="Signed in">
+        <p className="order-ref" style={{ margin: 0 }}>
+          Signed in as <strong>{session.email}</strong> · demo session, this tab only
+        </p>
+        <div className="actions" style={{ marginTop: 0 }}>
+          <button type="button" className="secondary" onClick={onSignOut}>Sign out</button>
+        </div>
+      </section>
+
       <p className="demo-note">
-        Demonstration only: no real money moves, and this page has no login yet — see the README
-        limits before relying on it.
+        Demonstration only: no real money moves, and the sign-in checks your browser rather than a
+        server — see the README limits before relying on it.
       </p>
       {error && <p className="error" role="alert">{error}</p>}
 

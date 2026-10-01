@@ -163,8 +163,13 @@ Two things to know first:
 
 ## E2. Admin (#/admin)
 
-- [ ] The **Admin** link in the first screen's footer opens the admin page; it shows the **Admin** pill
-  in the header with **Back to the site**.
+- [ ] Opening `#/admin` shows **Admin sign-in**, not the dashboard, and the cursor is in the email
+  field. The demo credentials are printed on the screen.
+- [ ] A wrong email or password shows an error under the fields and clears when you retype; the
+  correct credentials sign in. The email field ignores capitals and surrounding spaces.
+- [ ] The dashboard shows **Signed in as … · demo session, this tab only** with a **Sign out**
+  button; signing out returns to the sign-in screen, and a refresh keeps you signed in (closing
+  the tab signs you out).
 - [ ] The stats row shows the order count (open and completed), the value of completed orders, the
   **2% platform fee**, and what is **held in escrow** — all per currency, never mixed.
 - [ ] Each transaction card shows its **Platform fee** (M-Pesa/card orders) or **None (cash)**.
@@ -198,5 +203,5 @@ Two things to know first:
 - There is no sign-in yet. Payments in the app are a demonstration and there is no messaging by design:
   buying happens by placing an order, questions go in the order's note, and buyers cannot propose a
   price.
-- The admin page (#/admin) has no login yet: anyone who knows the address can use it. Protect it
-  before the site goes public.
+- The admin sign-in is a demonstration: the credentials are on the screen and the check runs in the
+  browser, so it stops casual visitors only. Real admin accounts come with the backend work.
