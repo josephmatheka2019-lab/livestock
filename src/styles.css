@@ -357,7 +357,84 @@ button.chip:hover { filter: none; background: var(--surface-soft); }
 .store-panel .store-row .hint { margin: 0; }
 
 /* ------------------------------------------------------------------ admin */
-.role-admin { --role: #6b4ea8; --role-tint: #efe9fb; --role-ink: #4a3382; }
+/* The admin console deliberately breaks the traders' warm-paper look: a dark
+   masthead over a cool grey-lavender page, a dark KPI readout, and sharp cards
+   with a purple accent edge. Everything is scoped to .role-admin, so the seller
+   and buyer pages keep their own design. */
+.role-admin {
+  --role: #6b4ea8;
+  --role-tint: #efe9fb;
+  --role-ink: #4a3382;
+  --ink-strong: #241c3d; /* headings are indigo, not the traders' green-black */
+  --line: #d8d1e8;
+  --line-strong: #8b81ad;
+  --shadow: 0 8px 22px rgb(36 28 61 / 10%);
+}
+html:has(.role-admin), body:has(.role-admin) { background: #eceaf4; }
+
+/* masthead: header and hero join into one dark, grid-textured block */
+.role-admin .site-header {
+  background: #1e1830;
+  border: 0;
+  border-radius: 14px 14px 0 0;
+  margin-bottom: 0;
+  padding: 13px 20px;
+}
+.role-admin .brand { color: #fff; }
+.role-admin .hero {
+  margin: 0 0 24px;
+  padding: 26px 24px 28px;
+  border-radius: 0 0 14px 14px;
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 5%) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 5%) 0 1px, transparent 1px 32px),
+    linear-gradient(135deg, #1e1830, #342659);
+}
+.role-admin .hero .eyebrow { color: #b8a6f0; letter-spacing: .18em; }
+.role-admin .hero h1 { color: #fff; }
+.role-admin .hero .intro { color: #cec5ea; }
+
+/* KPI readout: dark like an instrument panel, figures in tabular numbers */
+.role-admin .admin-stats {
+  background: #241d3b;
+  border-color: #372d57;
+  padding: 18px 20px;
+  box-shadow: 0 10px 26px rgb(30 24 48 / 25%);
+}
+.role-admin .admin-stats .stat { background: #2f2750; border-color: #453875; }
+.role-admin .admin-stats .stat dt { color: #aa9fd4; }
+.role-admin .admin-stats .stat dd { color: #fff; font-variant-numeric: tabular-nums; }
+.role-admin .admin-stats .stat-none { color: #aa9fd4; }
+.role-admin .admin-stats .stat-lines li { color: #efeafc; }
+.role-admin .admin-stats .hint { color: #c4bae6; margin-bottom: 0; }
+
+/* the session bar reads as a toolbar strip */
+.role-admin .admin-session { background: #f4f0fd; border-color: #d8c9f5; }
+
+/* sections: uppercase headings with a purple tick */
+.role-admin .records { margin-top: 30px; }
+.role-admin .section-heading .eyebrow { color: var(--role-ink); }
+.role-admin .section-heading .eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  background: var(--role);
+  margin-right: 9px;
+  border-radius: 2px;
+}
+.role-admin .section-heading h2 { text-transform: uppercase; letter-spacing: .05em; font-size: 1.08rem; }
+
+/* cards: sharper corners and a purple accent edge */
+.role-admin .order-card { border-radius: 10px; border-left: 4px solid var(--role); }
+.role-admin .empty { border-style: dashed; background: #f5f2fd; }
+
+/* small, tool-like buttons; purple notices; dialogs wear the house colour */
+.role-admin button { border-radius: 8px; }
+.role-admin .demo-note { background: #efe9fb; border-color: #c9b8f2; color: #4a3382; }
+.role-admin .confirm { border-top: 4px solid var(--role); }
+.role-admin .confirm h2 { color: var(--role-ink); }
+
 .admin-session { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; }
 .admin-fee { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0 0 10px; }
 .admin-fee dt { color: var(--muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }

@@ -211,7 +211,7 @@ function AdminDashboard({ session, onSignOut }) {
       </p>
       {error && <p className="error" role="alert">{error}</p>}
 
-      <section className="panel summary" aria-labelledby="admin-stats-heading">
+      <section className="panel summary admin-stats" aria-labelledby="admin-stats-heading">
         <h2 id="admin-stats-heading" className="visually-hidden">The platform at a glance</h2>
         <dl className="stat-grid">
           <div className="stat">

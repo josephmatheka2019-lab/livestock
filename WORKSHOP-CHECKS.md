@@ -179,6 +179,9 @@ Two things to know first:
 
 ## E2. Admin (#/admin)
 
+- [ ] The admin page has its **own look**, clearly not the trader pages: a dark masthead behind the
+  header and title, a cool grey-lavender background, a dark KPI panel with white figures, purple
+  accent edges on the cards and uppercase section headings. The seller and buyer pages are unchanged.
 - [ ] Opening `#/admin` shows **Admin sign-in**, not the dashboard, and the cursor is in the email
   field. The demo credentials are printed on the screen.
 - [ ] A wrong email or password shows an error under the fields and clears when you retype; the
