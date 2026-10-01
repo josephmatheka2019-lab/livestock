@@ -1,3 +1,5 @@
+import DisplayControls from './DisplayControls.jsx'
+
 // The mark: a barn. Simple shapes, so it stays sharp at any size and costs almost nothing to load.
 function BrandMark() {
   return (
@@ -11,8 +13,8 @@ function BrandMark() {
   )
 }
 
-// Shown at the top of every page. On the seller and buyer pages it also says which side you are
-// on and offers the way back to the first screen.
+// Shown at the top of every page. On the seller, buyer and admin pages it also says which side you are
+// on, offers the way back to the first screen, and carries the theme and text-size controls.
 export default function SiteHeader({ role = null }) {
   return (
     <header className="site-header">
@@ -21,10 +23,13 @@ export default function SiteHeader({ role = null }) {
         <span className="brand-name">Local Livestock<br />Marketplace</span>
       </a>
       {role && (
-        <p className="role-pill" style={{ margin: 0 }}>
-          <span>{role === 'seller' ? 'Seller' : role === 'admin' ? 'Admin' : 'Buyer'}</span>
-          <a href="#/">{role === 'admin' ? 'Back to the site' : 'Switch role'}</a>
-        </p>
+        <div className="header-tools">
+          <DisplayControls />
+          <p className="role-pill" style={{ margin: 0 }}>
+            <span>{role === 'seller' ? 'Seller' : role === 'admin' ? 'Admin' : 'Buyer'}</span>
+            <a href="#/">{role === 'admin' ? 'Back to the site' : 'Switch role'}</a>
+          </p>
+        </div>
       )}
     </header>
   )

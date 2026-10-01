@@ -175,3 +175,64 @@ export function clearAdminSession() {
   }
 }
 
+// Display preferences, remembered across visits: theme ('light' | 'dark') and text size
+// ('small' | 'normal' | 'large'). Validated on read so damaged data cannot break a page.
+const THEME_KEY = 'livestock-theme'
+const TEXT_SIZE_KEY = 'livestock-text-size'
+export const THEMES = ['light', 'dark']
+export const TEXT_SIZES = ['small', 'normal', 'large']
+
+export function readTheme() {
+  try {
+    const saved = window.localStorage.getItem(THEME_KEY)
+    if (THEMES.includes(saved)) return saved
+  } catch {
+    // Storage blocked: fall through to the system preference.
+  }
+  // No saved choice yet: follow the operating system's light/dark setting.
+  try {
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
+}
+
+export function writeTheme(theme) {
+  if (!THEMES.includes(theme)) return false
+  try {
+    window.localStorage.setItem(THEME_KEY, theme)
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function readTextSize() {
+  try {
+    const saved = window.localStorage.getItem(TEXT_SIZE_KEY)
+    if (TEXT_SIZES.includes(saved)) return saved
+  } catch {
+    // Storage blocked: use the default size.
+  }
+  return 'normal'
+}
+
+export function writeTextSize(size) {
+  if (!TEXT_SIZES.includes(size)) return false
+  try {
+    window.localStorage.setItem(TEXT_SIZE_KEY, size)
+    return true
+  } catch {
+    return false
+  }
+}
+
+// Put both preferences on <html> as data attributes, which is what the CSS keys off.
+// Called before the first render so the page never flashes the wrong theme.
+export function applyDisplayPreferences() {
+  const root = document.documentElement
+  root.dataset.theme = readTheme()
+  root.dataset.textsize = readTextSize()
+  return root
+}
+

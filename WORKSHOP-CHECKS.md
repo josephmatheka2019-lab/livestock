@@ -220,6 +220,21 @@ Two things to know first:
   confirmation traps focus until it is answered.
 - [ ] A screen reader announces added, saved, removed, sold, paused and ordered changes.
 
+## G. Display preferences (theme and text size)
+
+- [ ] The seller, buyer and admin headers show **[Light | Dark]** and **[A− | A | A+]**; the landing
+  and sign-in pages keep their plain header (the admin sign-in page does show them — it uses the admin header).
+- [ ] **Dark** turns every page dark — warm paper becomes near-black, panels become dark surfaces,
+  badges/chips invert (their tint and ink flip together so they stay readable), the admin console
+  stays its own dark-purple self, and links/eyebrows lighten so they keep contrast.
+- [ ] **Light** restores the current look exactly.
+- [ ] With no saved choice, the theme follows the system setting (check by switching the OS theme).
+- [ ] **A−** shrinks all text, **A** restores it, **A+** enlarges it — headings, buttons, tables and
+  dialogs all scale together while the layout keeps its shape (no overflow at phone width).
+- [ ] Both choices survive a refresh and are remembered per browser; changing one tab's theme does
+  not change the other tabs until they are reloaded or changed there.
+- [ ] Focus rings, error messages and form validation stay clearly visible in both themes.
+
 ## Expected behaviour that is not a failure
 
 - Buyers on another device see nothing: the data lives in one browser until accounts are connected.

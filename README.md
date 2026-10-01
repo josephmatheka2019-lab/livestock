@@ -47,6 +47,11 @@ has its own page.
 - Approve or reject **verification** requests, end a **Pro** plan, remove a **boost**, and see the
   **store revenue** (verification, boosts and Pro) as a ledger of sales.
 
+**Every page header (seller, buyer, admin)**
+- Choose **Light** or **Dark** appearance and a **small, normal or large** text size. Both choices
+  are remembered in the browser and applied before the page paints; the theme follows the system
+  until you pick one yourself.
+
 ## Requirements
 
 - Node.js 20.19+ or 22.12+
@@ -141,6 +146,8 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 | `livestock-orders` | The orders buyers have placed, and their status |
 | `livestock-admin` | Admin state: suspended / terminated accounts and payments held in escrow |
 | `livestock-admin-session` *(this tab only)* | The demo admin sign-in; closing the tab signs you out |
+| `livestock-theme` | Light or dark appearance (follows the system until you choose) |
+| `livestock-text-size` | The chosen text size: small, normal or large |
 | `livestock-display-currency` | The currency the buyer chose to see prices in |
 | `livestock-exchange-rates` | Today's exchange rates, kept for 12 hours |
 

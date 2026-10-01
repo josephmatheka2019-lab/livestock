@@ -25,12 +25,16 @@
   --notice-bg: #fff5df;
   --notice-line: #edcf8d;
   --danger: #9b2c2c;
+  --danger-ink: #9b2c2c; /* text/border form of the colour; button fills keep --danger */
   --focus: #2563eb;
+  --admin-bg: #eceaf4;
 
   /* the colour in use on the current page; .role-buyer switches it */
   --role: var(--green);
   --role-tint: var(--green-tint);
   --role-ink: var(--green-ink);
+  /* link/accent text follows the role; dark mode lightens it per page */
+  --link: var(--green);
 
   --radius: 14px;
   --shadow: 0 6px 20px rgb(60 48 20 / 7%);
@@ -41,8 +45,63 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
+  color-scheme: light;
 }
-.role-buyer { --role: var(--orange); --role-tint: var(--orange-tint); --role-ink: var(--orange-ink); }
+.role-buyer { --role: var(--orange); --role-tint: var(--orange-tint); --role-ink: var(--orange-ink); --link: var(--orange); }
+
+/* ------------------------------------------------------------------ display preferences
+   Theme and text size are chosen in the header and stored in the browser (storage.js);
+   main.jsx applies them before the first paint. The theme only re-points design tokens, so
+   every page follows without per-page rules; paired tokens (tint + ink) flip together so
+   chips and badges stay readable. Text size scales the root font: all rem-based type grows
+   or shrinks together while paddings and layout keep their shape. */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #15131c;
+  --surface: #1e1c27;
+  --surface-soft: #262431;
+  --ink: #e3e0ec;
+  --ink-strong: #f5f3fa;
+  --muted: #a49fb8;
+  --line: #34313f;
+  --line-strong: #7a7590;
+
+  /* accent pairs: dark tint backgrounds with light ink, so badges stay readable */
+  --green-tint: #1d3326;
+  --green-ink: #93e0ac;
+  --orange-tint: #3a2a1c;
+  --orange-ink: #f7c79c;
+  --amber-tint: #3a3113;
+  --amber-ink: #f0d98c;
+  --notice-bg: #2e2917;
+  --notice-line: #544a22;
+
+  --danger-ink: #ff8f94;
+  --focus: #7ba4ff;
+  --shadow: 0 6px 20px rgb(0 0 0 / 45%);
+  --admin-bg: #15131c;
+}
+/* link text is lighter than the button fills on a dark page, per role */
+html[data-theme="dark"] { --link: #7fc9a0; }
+html[data-theme="dark"] .role-buyer { --link: #f5a066; }
+html[data-theme="dark"] .role-admin {
+  --link: #a78bfa;
+  --ink-strong: #f0ecff;
+  --line: #3a3450;
+  --line-strong: #6f6889;
+  --shadow: 0 8px 22px rgb(0 0 0 / 45%);
+}
+/* fixed-colour pieces that tokens alone cannot reach */
+html[data-theme="dark"] .sold-date { color: #b9b4cc; }
+html[data-theme="dark"] .badge-new { background: #4a3a21; color: #f7c79c; }
+html[data-theme="dark"] .role-admin .admin-session { background: #251e3e; border-color: #463b6e; }
+html[data-theme="dark"] .role-admin .demo-note { background: #2a2246; border-color: #4a3d78; color: #d6c9ff; }
+html[data-theme="dark"] .role-admin .empty { background: #221c38; }
+
+/* text size: three steps on the root, so every rem-based size follows */
+html[data-textsize="small"] { font-size: 87.5%; }
+html[data-textsize="large"] { font-size: 120%; }
 
 /* ------------------------------------------------------------------ base */
 * { box-sizing: border-box; }
@@ -53,17 +112,17 @@ h1 { color: var(--ink-strong); font-size: clamp(1.9rem, 5.5vw, 2.9rem); font-wei
 h2 { color: var(--ink-strong); font-size: 1.25rem; font-weight: 750; margin-bottom: 14px; }
 h3 { color: var(--ink-strong); font-size: 1.05rem; font-weight: 750; margin-bottom: 6px; }
 h1:focus, h2:focus { outline: none; }
-a { color: var(--role); }
+a { color: var(--link); }
 footer { color: var(--muted); font-size: .85rem; line-height: 1.55; margin-top: 30px; }
 footer a { font-weight: 700; }
 .shell { width: min(100% - 32px, 960px); margin: 0 auto; padding: 18px 0 34px; }
 .hero { margin: 8px 0 22px; }
-.eyebrow { color: var(--role); font-size: .74rem; font-weight: 800; letter-spacing: .1em; margin: 0 0 8px; }
+.eyebrow { color: var(--link); font-size: .74rem; font-weight: 800; letter-spacing: .1em; margin: 0 0 8px; }
 .intro { max-width: 62ch; color: var(--muted); line-height: 1.6; margin-bottom: 0; font-size: 1.02rem; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* ------------------------------------------------------------------ site header */
-.site-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.site-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 4px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink-strong); text-decoration: none; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; }
 .brand:hover .brand-name { text-decoration: underline; }
 .brand-mark { flex-shrink: 0; }
@@ -73,6 +132,20 @@ footer a { font-weight: 700; }
 .role-pill a:hover { text-decoration: underline; }
 .back-link { display: inline-block; margin-bottom: 16px; font-weight: 700; text-decoration: none; }
 .back-link:hover { text-decoration: underline; }
+
+/* ------------------------------------------------------------------ display controls (theme, text size) */
+.header-tools { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+.display-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.display-group { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.display-group button { border: 0; border-right: 1px solid var(--line); border-radius: 0; background: var(--surface); color: var(--ink-strong); padding: 6px 12px; min-height: 36px; font-size: .85rem; font-weight: 700; }
+.display-group button:last-child { border-right: 0; }
+.display-group button:hover { filter: none; background: var(--surface-soft); }
+.display-group button[aria-pressed="true"] { background: var(--role); color: #fff; }
+/* the admin header is a dark masthead in both themes, so its controls use translucent white */
+.role-admin .site-header .display-group { background: rgb(255 255 255 / 10%); border-color: rgb(255 255 255 / 25%); }
+.role-admin .site-header .display-group button { background: transparent; color: #ece9f7; border-right-color: rgb(255 255 255 / 25%); }
+.role-admin .site-header .display-group button:hover { background: rgb(255 255 255 / 16%); }
+.role-admin .site-header .display-group button[aria-pressed="true"] { background: var(--role); color: #fff; }
 
 /* ------------------------------------------------------------------ surfaces */
 .panel, .empty { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
@@ -86,10 +159,10 @@ footer a { font-weight: 700; }
 label { display: block; font-weight: 700; margin: 14px 0 6px; }
 input, textarea, select { display: block; width: 100%; border: 1px solid var(--line-strong); border-radius: 10px; padding: 11px 12px; background: var(--surface); color: inherit; }
 input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-[aria-invalid="true"] { border-color: var(--danger); }
+[aria-invalid="true"] { border-color: var(--danger-ink); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .hint { color: var(--muted); font-size: .84rem; margin: 5px 0 10px; }
-.error { color: var(--danger); font-size: .9rem; font-weight: 600; margin: 6px 0; }
+.error { color: var(--danger-ink); font-size: .9rem; font-weight: 600; margin: 6px 0; }
 .form-error { margin-top: 12px; }
 .actions, .record-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 button { border: 0; border-radius: 10px; background: var(--role); color: white; cursor: pointer; font-weight: 700; padding: 10px 16px; }
@@ -254,7 +327,7 @@ button.chip:hover { filter: none; background: var(--surface-soft); }
 .form-panel { margin-bottom: 18px; }
 
 /* ------------------------------------------------------------------ dialog */
-.confirm { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; max-width: min(420px, calc(100% - 32px)); box-shadow: 0 20px 50px rgb(40 30 10 / 30%); color: inherit; }
+.confirm { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; max-width: min(420px, calc(100% - 32px)); box-shadow: 0 20px 50px rgb(40 30 10 / 30%); color: inherit; background: var(--surface); }
 .confirm::backdrop { background: rgb(30 40 30 / 55%); }
 .confirm h2 { margin-bottom: 8px; }
 .confirm p { color: var(--muted); line-height: 1.5; overflow-wrap: anywhere; }
@@ -301,7 +374,7 @@ button.chip:hover { filter: none; background: var(--surface-soft); }
 .filter-wrap .filters { margin: 8px 0 0; }
 .filter-toggle { min-height: 40px; }
 /* Delete is a serious action but not one to shout about: outlined until pressed */
-.record-actions button.danger { background: var(--surface); color: var(--danger); border: 1px solid #e0b4b4; }
+.record-actions button.danger { background: var(--surface); color: var(--danger-ink); border: 1px solid #e0b4b4; }
 .record-actions button.danger:hover { background: #fbeeee; filter: none; }
 
 /* keep the currency chips inside their bar, wrapping onto new rows */
@@ -380,7 +453,7 @@ button.chip:hover { filter: none; background: var(--surface-soft); }
   --line-strong: #8b81ad;
   --shadow: 0 8px 22px rgb(36 28 61 / 10%);
 }
-html:has(.role-admin), body:has(.role-admin) { background: #eceaf4; }
+html:has(.role-admin), body:has(.role-admin) { background: var(--admin-bg); }
 
 /* masthead: header and hero join into one dark, grid-textured block */
 .role-admin .site-header {
