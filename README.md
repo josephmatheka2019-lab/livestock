@@ -1,6 +1,6 @@
 # Local Livestock Marketplace
 
-A small web app where farmers list livestock for bulk sale and buyers browse, compare and contact them.
+A small web app where farmers list livestock for bulk sale and buyers browse, compare and place orders.
 Built with React and Vite. It began as the Vibe Coding SDLC workshop starter.
 
 When you open it, it asks whether you want to continue as a **seller** or a **buyer**, and each
@@ -17,6 +17,7 @@ has its own page.
 - Mark listings sold (the sale date is recorded) or available again, and pause a listing to hide it
   from buyers without deleting it.
 - See an at-a-glance summary, filter by animal, place or availability, and sort.
+- Review orders from buyers: accept (which holds the stock), decline, cancel, or mark one completed.
 
 **Buyers**
 - Browse the listings that are on sale (sold and paused ones are hidden), each showing who is selling,
@@ -25,8 +26,11 @@ has its own page.
   delivery / vaccinated / health certificate / negotiable.
 - View all prices in another currency (KES, USD, EUR, GBP, KWD and every other currency), converted with
   daily exchange rates. Converted prices are marked as approximate.
-- Open a listing to see the full details, work out a price for any number of animals, and see the
-  seller's phone with Call and WhatsApp buttons once they have added their own name and number.
+- Open a listing to see the full details, choose how many you want and how to pay, then place the order.
+  A confirmation asks **Place this order?** before it goes to the seller, who accepts or declines it.
+  You see the outcome under **My orders**, and when an M-Pesa or card order is accepted you are asked
+  whether to pay then (a demonstration; cash orders skip that and are paid on delivery). You can also
+  see the seller's phone with Call and WhatsApp buttons once you have added your own name and number.
 - Save listings for later. A saved listing that is sold, paused or deleted stays on the list, marked
   as no longer available.
 
@@ -80,11 +84,13 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
   security. The seller's phone number is hidden from a buyer who has not added their details, but it is
   still in the browser's storage. The database rules that enforce this properly are written (see below)
   but not connected.
-- **No payments.** Payment methods are information for the buyer. The app takes no money.
+- **No real payments.** Payment methods are recorded on the order, and paying in the app is a
+  demonstration: the app takes no money. Cash is paid to the seller on delivery.
 - **Converted prices are approximate.** They use a free daily rates service, fetched only when a buyer
   asks for a converted currency. A buyer pays in the seller's own currency.
-- **No messaging, by design.** Buyers contact sellers by phone or WhatsApp. There is no enquiry form or
-  inbox, and buyers cannot propose a price: the seller's price is the price.
+- **No messaging, by design.** Buying happens by placing an order, not by chatting: there is no enquiry
+  form or inbox, and buyers cannot propose a price — the seller's price is the price. Buyers can still
+  call or WhatsApp the seller with questions.
 - Photos are shrunk to small thumbnails so they fit in the browser's roughly 5 MB of storage.
 
 ## Project map
@@ -92,7 +98,8 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 - `src/App.jsx`, `src/router.js`: which page to show for an address
 - `src/Landing.jsx`, `HeroArt.jsx`, `SiteHeader.jsx`: the seller or buyer choice, its picture, and the header shared by every page
 - `src/SellerPage.jsx` and `SellerProfile`, `ListingForm`, `ListingPreview`, `SellerSummary`, `ConfirmDelete`: the seller side
-- `src/BuyerPage.jsx` and `BuyerProfile`, `BuyerFilters`, `CurrencyPicker`, `PriceCalculator`, `SellerContact`, `SavedList`, `SaveButton`: the buyer side
+- `src/BuyerPage.jsx` and `BuyerProfile`, `BuyerFilters`, `CurrencyPicker`, `OrderForm`, `SellerContact`, `SavedList`, `SaveButton`, `MyOrders`: the buyer side
+- `src/orders.js`, `OrderCard.jsx`, `OrdersPanel.jsx`, `ConfirmDialog.jsx`: order rules and the yes/no confirmations, shared by both sides
 - `src/ListingList.jsx`, `ListingSummary.jsx`, `ListingDetails.jsx`: shared by both sides (`ListingFilters.jsx` is the seller's filter bar)
 - `src/listing.js`: listing rules (validation, filtering, sorting, sold / paused state, quotes)
 - `src/currency.js`, `src/rates.js`: currencies, formatting and exchange rates
@@ -112,6 +119,7 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 | `livestock-seller-profile` | The seller profile |
 | `livestock-buyer-profile` | The buyer's name, phone and location |
 | `livestock-saved-listings` | The buyer's saved listings |
+| `livestock-orders` | The orders buyers have placed, and their status |
 | `livestock-display-currency` | The currency the buyer chose to see prices in |
 | `livestock-exchange-rates` | Today's exchange rates, kept for 12 hours |
 

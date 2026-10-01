@@ -8,7 +8,7 @@ export default function SellerContact({ record, seller, buyer, buyerReady, onNee
 
   return (
     <section className="contact" aria-labelledby="contact-heading">
-      <h3 id="contact-heading">Contact the seller</h3>
+      <h3 id="contact-heading">Questions? Contact the seller</h3>
 
       {!sellerReady && (
         <p className="hint">This seller has not added contact details yet, so there is no phone number to show.</p>

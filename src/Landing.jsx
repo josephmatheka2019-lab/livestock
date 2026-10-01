@@ -28,7 +28,7 @@ const ROLES = [
   {
     key: 'buyer',
     title: 'I am a buyer',
-    text: 'Search livestock for sale by animal, place and price, see prices in your own currency, save the ones you like, and call or WhatsApp the seller.',
+    text: 'Search livestock for sale by animal, place and price, see prices in your own currency, save the ones you like, and place an order.',
     action: 'Continue as a buyer',
   },
 ]
@@ -36,7 +36,7 @@ const ROLES = [
 const POINTS = [
   ['Bulk friendly', 'Sellers can offer one price for the whole lot, and buyers see the saving.'],
   ['Prices in any currency', 'Buyers can view prices in dollars, euros, pounds, dinars and more.'],
-  ['Straight to the seller', 'Call or WhatsApp the seller directly. No middleman.'],
+  ['Order with confidence', 'Choose how many you want, see the total, then confirm. The seller accepts or declines.'],
 ]
 
 export default function Landing() {

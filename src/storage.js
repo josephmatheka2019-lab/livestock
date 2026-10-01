@@ -103,3 +103,23 @@ export function writeSaved(list) {
     return false
   }
 }
+
+const ORDERS_KEY = 'livestock-orders'
+
+// Raw orders; orders.js checks and cleans them. Buyers and sellers read the same list.
+export function readOrders() {
+  try {
+    return JSON.parse(window.localStorage.getItem(ORDERS_KEY))
+  } catch {
+    return null
+  }
+}
+
+export function writeOrders(orders) {
+  try {
+    window.localStorage.setItem(ORDERS_KEY, JSON.stringify(orders))
+    return true
+  } catch {
+    return false
+  }
+}

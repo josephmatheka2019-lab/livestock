@@ -13,7 +13,7 @@ const COPY = {
   buyer: {
     name: 'buyer',
     other: 'seller',
-    signupHint: 'After creating your account you will add your name and phone number, so you can contact sellers.',
+    signupHint: 'After creating your account you will add your name and phone number, so you can place orders and contact sellers.',
     signinIntro: 'Log in to browse livestock and see your saved listings.',
   },
 }

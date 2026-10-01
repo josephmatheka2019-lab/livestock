@@ -73,6 +73,24 @@ Two things to know first:
   shows the right listings. Closing the panel with a filter on shows "Filter listings (on)".
 - [ ] **Sort by** offers Newest, Animal type A–Z and Z–A, and **Recently sold**.
 
+### Orders from buyers
+- [ ] The seller page has **Listings (n)** and **Orders (n, m new)** tabs; a new order shows as new.
+- [ ] **Accept** asks first and, once accepted, the listing's quantity drops by the ordered amount (a
+  listing emptied this way is marked **Sold**). The buyer's order shows **Accepted**.
+- [ ] **Decline** asks first and the stock is untouched; the buyer sees **Declined**.
+- [ ] When the seller accepts an M-Pesa or card order, the buyer's **My orders** opens
+  **"The seller accepted your order. Proceed with payment?"** with **Yes, pay now (demo)** and
+  **No, not now**. **No** leaves the order accepted, with **Pay now (demo)** still on the card, and the
+  question is not repeated on a reload of the same tab.
+- [ ] A **cash** order never asks: it simply shows "Accepted: pay the seller in cash on delivery."
+- [ ] A **declined** order shows a Declined badge and "The seller declined this order. Nothing has been
+  charged."
+- [ ] **Mark completed** is offered to the seller only when the order is paid (online) or accepted (cash).
+- [ ] Cancelling an accepted order asks first and returns the held animals to the listing's quantity.
+- [ ] After **Mark completed**, the tally stays correct: the listing keeps the reduced quantity (the
+  animals were deducted when the order was accepted, so completing never deducts a second time), and
+  the summary's "Value of available stock" matches quantity × price of what is left.
+
 ## D. Buyer
 
 ### Browsing
@@ -101,17 +119,32 @@ Two things to know first:
 - [ ] Changing currency clears the price limits. Going back to **Seller's currency** removes the price sorts.
 - [ ] With the internet switched off and no saved rates, a message says so and prices stay in the sellers' currencies.
 
-### Details, contact and calculator
-- [ ] **View** opens the full details above the list.
+### Details, ordering and contact
+- [ ] **View** opens the full details above the list, with the **Order this** form and, below it,
+  **Questions? Contact the seller**.
 - [ ] Before the buyer adds their details, the contact box shows the seller's name and place but **not** the
-  phone number, with an **Add my details** button that opens the buyer form.
+  phone number, with an **Add my details** button that opens the buyer form. The order form shows the same
+  invitation instead of a **Place order** button.
 - [ ] After saving name and phone, the seller's number, a **Call** button and (where possible) a
   **WhatsApp** button appear. WhatsApp opens in a new tab with a ready message about that listing.
 - [ ] A seller number without a country code on a listing not priced in KES shows only **Call**, with a
   short explanation.
-- [ ] **How many do you want?** shows the price each and the total. **Whole lot** fills in the full stock and,
+- [ ] Entering a quantity shows the price each and the order total. **Whole lot** fills in the full stock and,
   if there is a bulk price, shows it and "You save …".
 - [ ] `0`, `2.5`, empty and a number above the stock show a clear message, not a price.
+- [ ] **Place order** without a quantity, payment method or (when delivery is chosen) address shows the
+  error by the field and puts the cursor there; nothing is ordered.
+
+### Placing an order
+- [ ] **Place order** with everything filled in opens a **Place this order?** confirmation listing the
+  quantity, total, payment method, delivery address and note. **No, go back** (and Escape) close it and
+  change nothing; focus starts on the safe answer.
+- [ ] **Yes, place order** closes the form, announces the order, and the listing now shows **Your order**
+  with its status and a **View my orders** button instead of a second form.
+- [ ] The **My orders (n)** tab lists the order newest first with a **Placed** badge, a reference, the
+  total, and "Waiting for the seller to accept or decline."
+- [ ] **Cancel order** asks first; **No, keep it** keeps it, **Yes, cancel order** marks it **Cancelled**.
+- [ ] Orders survive a refresh, and the tab counts update.
 
 ### Saved listings
 - [ ] **Save** turns into **Remove saved**; the **Saved (n)** count updates; the same button is in the details.
@@ -125,7 +158,7 @@ Two things to know first:
 ## E. Both sides together
 
 - [ ] A listing marked sold or paused by the seller disappears from the buyer's Browse page.
-- [ ] A seller's own list never shows buyer tools (Save, the calculator, the contact box, New tags).
+- [ ] A seller's own list never shows buyer tools (Save, the order form, the contact box, New tags).
 - [ ] The buyer's name and phone appear only on the buyer page; the seller's profile is not changed by
   anything a buyer does.
 
@@ -137,7 +170,7 @@ Two things to know first:
 - [ ] At phone width (about 375 px) there is no sideways scrolling, buttons wrap, and the long forms stay usable.
 - [ ] Every control can be reached and used with the keyboard, focus is always visible, and the delete
   confirmation traps focus until it is answered.
-- [ ] A screen reader announces added, saved, removed, sold and paused changes.
+- [ ] A screen reader announces added, saved, removed, sold, paused and ordered changes.
 
 ## Expected behaviour that is not a failure
 
@@ -145,5 +178,6 @@ Two things to know first:
 - The seller's phone number is hidden on screen until the buyer adds their details, but it is still in the
   browser's storage; real protection comes with accounts.
 - Converted prices are approximate and change day to day.
-- There is no sign-in yet. There are no payments and no messaging by design: buyers call or use WhatsApp,
-  and cannot propose a price.
+- There is no sign-in yet. Payments in the app are a demonstration and there is no messaging by design:
+  buying happens by placing an order, buyers can still call or use WhatsApp with questions, and cannot
+  propose a price.

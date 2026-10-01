@@ -27,7 +27,7 @@ export function validateBuyerProfile(values) {
   return errors
 }
 
-// A buyer needs a name and phone number before they can contact sellers.
+// A buyer needs a name and phone number before they can order or contact sellers.
 export function isBuyerProfileComplete(profile) {
   return Boolean(profile.name?.trim() && profile.phone?.trim())
 }

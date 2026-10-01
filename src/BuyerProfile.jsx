@@ -10,7 +10,7 @@ function FieldError({ name, errors }) {
 }
 
 // A buyer can browse without a profile, so an unfinished one is a short invitation rather
-// than a form in the way. The details are needed later, to contact sellers.
+// than a form in the way. The details are needed later, to place an order or contact sellers.
 export default function BuyerProfile({ profile, onSave, openRequest = 0 }) {
   const complete = isBuyerProfileComplete(profile)
   const [editing, setEditing] = useState(false)
@@ -121,7 +121,7 @@ export default function BuyerProfile({ profile, onSave, openRequest = 0 }) {
   if (!complete) {
     return (
       <section className="bar bar-prompt" aria-labelledby="buyer-profile-heading">
-        <h2 id="buyer-profile-heading" className="bar-title">Add your details to contact sellers</h2>
+        <h2 id="buyer-profile-heading" className="bar-title">Add your details to place an order</h2>
         <p className="bar-text">You can browse without them.</p>
         <div className="bar-end">
           <button type="button" ref={opener} onClick={open}>Add my details</button>

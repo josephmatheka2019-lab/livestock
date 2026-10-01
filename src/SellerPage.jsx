@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { readProfile, readRecords, writeProfile, writeRecords } from './storage.js'
+import { readOrders, readProfile, readRecords, writeOrders, writeProfile, writeRecords } from './storage.js'
+import { acceptOrder, cancelOrder, cleanOrders, completeOrder, declineOrder } from './orders.js'
 import {
   animalLabel, FIELD_IDS, matchesFilters, SELLER_SORT_OPTIONS, sortRecords, validateListing, withPaused, withStatus,
 } from './listing.js'
@@ -9,6 +10,7 @@ import ConfirmDelete from './ConfirmDelete.jsx'
 import ListingForm from './ListingForm.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
+import OrdersPanel from './OrdersPanel.jsx'
 import SellerProfile from './SellerProfile.jsx'
 import SellerSummary from './SellerSummary.jsx'
 import SiteHeader from './SiteHeader.jsx'
@@ -67,14 +69,42 @@ export default function SellerPage() {
   // The listing form is opened on request, so the page opens on the seller's listings.
   const [formOpen, setFormOpen] = useState(false)
   const [focusRequest, setFocusRequest] = useState(0)
+  const [orders, setOrders] = useState(() => cleanOrders(readOrders()))
+  const [orderError, setOrderError] = useState('')
+  const [view, setView] = useState('listings')
 
   useEffect(() => {
     setStorageWarning(!writeRecords(records))
   }, [records])
 
   useEffect(() => {
+    writeOrders(orders)
+  }, [orders])
+
+  useEffect(() => {
     document.title = 'Your listings – Local Livestock Marketplace'
+    // Orders (and the stock a buyer's cancellation returns) can change in another tab of this browser.
+    const refresh = () => { setOrders(cleanOrders(readOrders())); setRecords(readRecords()) }
+    window.addEventListener('storage', refresh)
+    return () => window.removeEventListener('storage', refresh)
   }, [])
+
+  // Accepting or cancelling an order moves animals on or off the listing, so both lists change together.
+  function applyOrderChange(result, message) {
+    if (result.error) {
+      setOrderError(result.error)
+      return
+    }
+    setOrderError('')
+    setOrders(result.orders)
+    setRecords(result.listings)
+    announce(message)
+  }
+
+  const acceptMyOrder = (id) => applyOrderChange(acceptOrder(orders, records, id), 'Order accepted. The animals are held for the buyer.')
+  const declineMyOrder = (id) => applyOrderChange(declineOrder(orders, records, id), 'Order declined.')
+  const cancelMyOrder = (id) => applyOrderChange(cancelOrder(orders, records, id), 'Order cancelled. The animals are back on sale.')
+  const completeMyOrder = (id) => applyOrderChange(completeOrder(orders, records, id), 'Order marked completed.')
 
   // The form only exists once open, so move into it after it has appeared.
   useEffect(() => {
@@ -292,6 +322,7 @@ export default function SellerPage() {
   const visibleRecords = sortRecords(records.filter((record) => matchesFilters(record, filters)), sort)
   const selectedRecord = records.find((record) => record.id === selectedId)
   const pendingDeleteRecord = records.find((record) => record.id === pendingDeleteId)
+  const newOrders = orders.filter((order) => order.status === 'placed').length
 
   return (
     <main className="shell role-seller">
@@ -304,9 +335,18 @@ export default function SellerPage() {
 
       <SellerProfile profile={profile} onSave={saveProfile} />
 
-      <SellerSummary records={records} />
+      <div className="view-tabs" role="group" aria-label="What to show">
+        <button type="button" className={`chip${view === 'listings' ? ' chip-on' : ''}`} aria-pressed={view === 'listings'}
+          onClick={() => setView('listings')}>Listings ({records.length})</button>
+        <button type="button" className={`chip${view === 'orders' ? ' chip-on' : ''}`} aria-pressed={view === 'orders'}
+          onClick={() => setView('orders')}>
+          Orders ({orders.length}{newOrders > 0 ? `, ${newOrders} new` : ''})
+        </button>
+      </div>
 
-      {profileComplete && formOpen && (
+      {view === 'listings' && <SellerSummary records={records} />}
+
+      {view === 'listings' && profileComplete && formOpen && (
         <ListingForm
           form={form}
           profile={profile}
@@ -320,7 +360,7 @@ export default function SellerPage() {
           onCancel={cancelEdit}
         />
       )}
-      {!profileComplete && (
+      {view === 'listings' && !profileComplete && (
         <section className="panel locked" aria-labelledby="locked-heading">
           <h2 id="locked-heading">Add a listing</h2>
           <p>Finish your seller profile above to start posting. Buyers need your business name and phone number to reach you.</p>
@@ -341,10 +381,23 @@ export default function SellerPage() {
 
       {storageWarning && <p className="notice" role="status">This browser could not save changes. Your list may not survive a refresh.</p>}
 
-      {selectedRecord && (
+      {view === 'listings' && selectedRecord && (
         <ListingDetails record={selectedRecord} onEdit={startEdit} onDelete={requestDelete} onClose={() => setSelectedId(null)} />
       )}
 
+      {view === 'orders' && (
+        <OrdersPanel
+          orders={orders}
+          listings={records}
+          error={orderError}
+          onAccept={acceptMyOrder}
+          onDecline={declineMyOrder}
+          onCancel={cancelMyOrder}
+          onComplete={completeMyOrder}
+        />
+      )}
+
+      {view === 'listings' && (
       <ListingList
         records={visibleRecords}
         totalCount={records.length}
@@ -363,6 +416,7 @@ export default function SellerPage() {
         onTogglePaused={togglePaused}
         onDelete={requestDelete}
       />
+      )}
       <footer><p>Listings are saved in this browser only. Browser storage is local to this origin and is not a secure or shared database.</p></footer>
     </main>
   )

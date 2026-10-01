@@ -4,7 +4,8 @@ import BuyerFilters from './BuyerFilters.jsx'
 import CurrencyPicker from './CurrencyPicker.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
-import PriceCalculator from './PriceCalculator.jsx'
+import MyOrders from './MyOrders.jsx'
+import OrderForm from './OrderForm.jsx'
 import SaveButton from './SaveButton.jsx'
 import SavedList from './SavedList.jsx'
 import SellerContact from './SellerContact.jsx'
@@ -17,9 +18,10 @@ import { loadRates } from './rates.js'
 import { emptyBuyerProfile, isBuyerProfileComplete } from './buyerProfile.js'
 import { addSaved, cleanSaved, isSaved, removeSaved, savedView } from './saved.js'
 import { animalLabel } from './listing.js'
+import { cancelOrder, cleanOrders, isOpen, payOrder } from './orders.js'
 import {
-  readBuyerProfile, readDisplayCurrency, readProfile, readRecords, readSaved, writeBuyerProfile, writeDisplayCurrency,
-  writeSaved,
+  readBuyerProfile, readDisplayCurrency, readOrders, readProfile, readRecords, readSaved, writeBuyerProfile,
+  writeDisplayCurrency, writeOrders, writeRecords, writeSaved,
 } from './storage.js'
 
 // Buyers can only look: no form, and no way to change or remove a listing.
@@ -39,11 +41,15 @@ export default function BuyerPage() {
   const [saved, setSaved] = useState(() => cleanSaved(readSaved()))
   const [view, setView] = useState('browse')
   const [announcement, setAnnouncement] = useState({ text: '', count: 0 })
+  const [orders, setOrders] = useState(() => cleanOrders(readOrders()))
+  const [orderError, setOrderError] = useState('')
 
   useEffect(() => {
     document.title = 'Find livestock – Local Livestock Marketplace'
-    // Pick up listings, seller details and saved listings changed in another tab of this browser.
-    const refresh = () => { setRecords(readRecords()); setSeller(readProfile()); setSaved(cleanSaved(readSaved())) }
+    // Pick up listings, seller details, saved listings and orders changed in another tab of this browser.
+    const refresh = () => {
+      setRecords(readRecords()); setSeller(readProfile()); setSaved(cleanSaved(readSaved())); setOrders(cleanOrders(readOrders()))
+    }
     window.addEventListener('storage', refresh)
     return () => window.removeEventListener('storage', refresh)
   }, [])
@@ -69,9 +75,38 @@ export default function BuyerPage() {
     writeSaved(saved)
   }, [saved])
 
+  useEffect(() => {
+    writeOrders(orders)
+  }, [orders])
+
   function announce(text) {
     setAnnouncement((current) => ({ text, count: current.count + 1 }))
   }
+
+  // The order was already confirmed with "Yes, place order" in the form.
+  function placeOrder(order) {
+    setOrderError('')
+    setOrders((current) => [order, ...current])
+    announce(`Order placed for ${order.quantity} ${order.listingLabel}. The seller will accept or decline it.`)
+  }
+
+  // A change to an order can also change a listing's stock (cancelling an accepted order returns the animals).
+  function applyOrderChange(result, message) {
+    if (result.error) {
+      setOrderError(result.error)
+      return
+    }
+    setOrderError('')
+    setOrders(result.orders)
+    if (result.listings !== records) {
+      setRecords(result.listings)
+      writeRecords(result.listings)
+    }
+    announce(message)
+  }
+
+  const cancelMyOrder = (id) => applyOrderChange(cancelOrder(orders, records, id), 'Order cancelled.')
+  const payMyOrder = (id) => applyOrderChange(payOrder(orders, records, id), 'Payment recorded (demonstration).')
 
   function toggleSaved(record) {
     if (isSaved(saved, record.id)) {
@@ -123,7 +158,7 @@ export default function BuyerPage() {
       <div className="hero">
         <p className="eyebrow">FOR BUYERS</p>
         <h1>Find livestock</h1>
-        <p className="intro">Search animals for sale by breed, place or price, then call or WhatsApp the seller.</p>
+        <p className="intro">Search animals for sale by breed, place or price, then place your order &ndash; the seller accepts or declines it.</p>
       </div>
 
       <BuyerProfile profile={profile} onSave={saveProfile} openRequest={profileRequests} />
@@ -138,7 +173,18 @@ export default function BuyerPage() {
           onClose={() => setSelectedId(null)}
           extraActions={<SaveButton record={selected} saved={savedIds.has(selected.id)} onToggle={toggleSaved} />}
         >
-          <PriceCalculator key={selected.id} record={selected} display={display} />
+          <OrderForm
+            key={selected.id}
+            record={selected}
+            display={display}
+            buyer={profile}
+            buyerReady={isBuyerProfileComplete(profile)}
+            orders={orders}
+            seller={seller}
+            onPlace={placeOrder}
+            onNeedProfile={() => setProfileRequests((count) => count + 1)}
+            onViewOrders={() => setView('orders')}
+          />
           <SellerContact
             record={selected}
             seller={seller}
@@ -154,13 +200,25 @@ export default function BuyerPage() {
           onClick={() => setView('browse')}>Browse</button>
         <button type="button" className={`chip${view === 'saved' ? ' chip-on' : ''}`} aria-pressed={view === 'saved'}
           onClick={() => setView('saved')}>Saved ({saved.length})</button>
+        <button type="button" className={`chip${view === 'orders' ? ' chip-on' : ''}`} aria-pressed={view === 'orders'}
+          onClick={() => setView('orders')}>My orders ({orders.length}{orders.some(isOpen) ? `, ${orders.filter(isOpen).length} open` : ''})</button>
       </div>
 
       <div className="visually-hidden" role="status" aria-live="polite">
         <span key={announcement.count}>{announcement.text}</span>
       </div>
 
-      {view === 'saved' ? (
+      {view === 'orders' ? (
+        <MyOrders
+          orders={orders}
+          display={display}
+          seller={seller}
+          error={orderError}
+          onCancel={cancelMyOrder}
+          onPay={payMyOrder}
+          onBrowse={() => setView('browse')}
+        />
+      ) : view === 'saved' ? (
         <SavedList
           items={savedItems}
           display={display}
