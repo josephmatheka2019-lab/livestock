@@ -161,6 +161,22 @@ Two things to know first:
 - [ ] The buyer's name and phone appear only on the buyer page; the seller's profile is not changed by
   anything a buyer does.
 
+## E1. The store: verification, boosts, Pro
+
+- [ ] The seller's **Grow your sales** panel lists the three extras with their demo prices; buyers never
+  see a price anywhere.
+- [ ] **Get verified** asks first, records a demo sale, and shows **Pending review**. Until the seller
+  profile is finished it refuses with a clear message.
+- [ ] The admin **Approve verification** → the **Verified** badge appears on the seller's cards on the
+  buyer page (browse and saved); **Reject** returns to **Not verified** and the seller can ask again.
+- [ ] **Boost** on a listing card asks first, records a demo sale, then shows **Boosted until <date>**
+  and the **Boosted** badge. In the buyer's browse list that listing now leads the results; an expired
+  boost drops back on its own with no cleanup needed.
+- [ ] **Go Pro** asks first, records a demo sale, shows **Active until <date>**, the **Pro** badge on
+  listings, and an order summary (orders received, completed value) in the panel. **End plan** asks
+  first and removes it.
+- [ ] All three refuse to run for a suspended or terminated seller, with the reason on screen.
+
 ## E2. Admin (#/admin)
 
 - [ ] Opening `#/admin` shows **Admin sign-in**, not the dashboard, and the cursor is in the email
@@ -181,6 +197,13 @@ Two things to know first:
   replaced by the reason. **Reinstate** restores everything.
 - [ ] **Terminate** warns it cannot be undone; afterwards **Reinstate** is not offered and every
   status change on that account is refused.
+- [ ] The **Store revenue** stat totals the extras sold (per currency) with per-kind counts; the
+  **Store sales** list shows each sale with its fee and date.
+- [ ] A seller's verification request makes **Approve verification** / **Reject** appear on their account
+  card; approving shows the **Verified** badge on their listings to buyers, rejecting lets them ask again.
+- [ ] An active Pro plan shows its end date with an **End Pro plan** button that removes the badge.
+- [ ] **Boosted listings** lists every live boost with its expiry and a **Remove boost** button (asks
+  first); removing it drops the listing back to its normal place in buyer results.
 - [ ] Every admin action is confirmed first (**No, go back** and Escape change nothing), and the
   changes survive a refresh.
 

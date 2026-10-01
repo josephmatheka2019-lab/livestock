@@ -1,4 +1,5 @@
 import { ONLINE_METHODS } from './orders.js'
+import { SALE_KINDS, VERIFICATION_STATUSES } from './store.js'
 
 // Admin rules: account status, escrow holds on payments, and the platform fee.
 // An account's status is fixed by the admin and cannot be changed by the account itself.
@@ -25,7 +26,7 @@ export function checkAdminCredentials(email, password) {
     && String(password ?? '') === DEMO_ADMIN_PASSWORD
 }
 
-export const emptyAdminState = () => ({ accounts: {}, holds: {} })
+export const emptyAdminState = () => ({ accounts: {}, holds: {}, sales: [] })
 
 // The platform's cut of an in-app payment (M-Pesa or card), as agreed in the monetisation plan.
 // Cash orders carry no fee: the platform never sees the money. The rate is the owner's to change.
@@ -113,7 +114,11 @@ export function cleanAdminState(value) {
   if (value.accounts && typeof value.accounts === 'object') {
     for (const [id, entry] of Object.entries(value.accounts)) {
       if (entry && typeof entry === 'object' && ACCOUNT_STATUSES.includes(entry.status)) {
-        accounts[id] = { status: entry.status, updatedAt: typeof entry.updatedAt === 'string' ? entry.updatedAt : '' }
+        const clean = { status: entry.status, updatedAt: typeof entry.updatedAt === 'string' ? entry.updatedAt : '' }
+        // Verification and Pro come from store.js; keep them only when well-formed.
+        if (VERIFICATION_STATUSES.includes(entry.verification)) clean.verification = entry.verification
+        if (entry.pro && typeof entry.pro.until === 'string') clean.pro = { until: entry.pro.until }
+        accounts[id] = clean
       }
     }
   }
@@ -125,5 +130,10 @@ export function cleanAdminState(value) {
       }
     }
   }
-  return { accounts, holds }
+  const sales = (Array.isArray(value.sales) ? value.sales : []).filter((sale) =>
+    sale && typeof sale === 'object' && typeof sale.id === 'string' && SALE_KINDS.includes(sale.kind)
+    && typeof sale.label === 'string' && Number.isFinite(sale.amount) && typeof sale.currency === 'string'
+    && typeof sale.at === 'string',
+  ).slice(0, 200)
+  return { accounts, holds, sales }
 }

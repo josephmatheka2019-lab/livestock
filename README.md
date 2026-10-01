@@ -18,10 +18,16 @@ has its own page.
   from buyers without deleting it.
 - See an at-a-glance summary, filter by animal, place or availability, and sort.
 - Review orders from buyers: accept (which holds the stock), decline, cancel, or mark one completed.
+- **Grow your sales** (optional extras, demo payments): request the **Verified** badge for the admin to
+  approve, subscribe to **Seller Pro** (badge + order summary), or **boost** a listing to the top of
+  buyer results for 7 days. Prices are demo placeholders: verification KES 500, boost KES 300,
+  Pro KES 1,000 per 30 days.
 
 **Buyers**
 - Browse the listings that are on sale (sold and paused ones are hidden), each showing who is selling,
-  a New tag for the first week, and the saving on a bulk deal.
+  a New tag for listings under a week old, and the saving on a bulk deal. **Boosted** listings lead the
+  results with a Boosted badge; a **Verified** or **Pro** badge on the seller's cards shows who takes
+  the platform seriously. Buyers never see what any of these cost.
 - Search by any word and filter by animal, place, payment method, minimum animals, price range, and
   delivery / vaccinated / health certificate / negotiable.
 - View all prices in another currency (KES, USD, EUR, GBP, KWD and every other currency), converted with
@@ -38,6 +44,8 @@ has its own page.
 - See every transaction with the platform fee on it, the totals completed, and what is held in escrow.
 - Hold a payment (escrow) so the seller cannot complete the order until it is released.
 - Suspend or terminate the seller or buyer account; reinstate a suspended one. Every action asks first.
+- Approve or reject **verification** requests, end a **Pro** plan, remove a **boost**, and see the
+  **store revenue** (verification, boosts and Pro) as a ledger of sales.
 
 ## Requirements
 
@@ -111,6 +119,7 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 - `src/BuyerPage.jsx` and `BuyerProfile`, `BuyerFilters`, `CurrencyPicker`, `OrderForm`, `SellerContact`, `SavedList`, `SaveButton`, `MyOrders`: the buyer side
 - `src/orders.js`, `OrderCard.jsx`, `OrdersPanel.jsx`, `ConfirmDialog.jsx`: order rules and the yes/no confirmations, shared by both sides
 - `src/AdminPage.jsx`, `admin.js`: the admin page — fees, escrow holds, account status
+- `src/store.js`, `SellerStore.jsx`: the optional paid extras — verification, boosts, Seller Pro (demo prices)
 - `src/ListingList.jsx`, `ListingSummary.jsx`, `ListingDetails.jsx`: shared by both sides (`ListingFilters.jsx` is the seller's filter bar)
 - `src/listing.js`: listing rules (validation, filtering, sorting, sold / paused state, quotes)
 - `src/currency.js`, `src/rates.js`: currencies, formatting and exchange rates

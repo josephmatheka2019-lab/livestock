@@ -1,5 +1,11 @@
 # Plan: earning from the marketplace
 
+> **Status (demo build):** the three *first* extras — **Boosted listings**, **Seller Pro** and the
+> **Verified seller badge** — are now built as demos (`src/store.js`, `src/SellerStore.jsx`): prices
+> are placeholders, payments record a sale in the admin's ledger but take no money, and approval of
+> verification sits with the admin. The commission on in-app payments still waits on real payment
+> rails (Phase H).
+
 This lists the ways the site can earn money without pushing a seller or a buyer away. Every
 option below is chosen because it is something the user *wants* to pay for (more buyers, more
 trust, less hassle), not a toll on using the site. Nothing here is built yet; it is a decision

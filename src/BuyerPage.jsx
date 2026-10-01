@@ -20,6 +20,7 @@ import { addSaved, cleanSaved, isSaved, removeSaved, savedView } from './saved.j
 import { animalLabel } from './listing.js'
 import { cancelOrder, cleanOrders, isOpen, payOrder } from './orders.js'
 import { accountStatus, cleanAdminState } from './admin.js'
+import { boostedFirst, isPro, verificationStatus } from './store.js'
 import {
   readAdmin, readBuyerProfile, readDisplayCurrency, readOrders, readProfile, readRecords, readSaved, writeBuyerProfile,
   writeDisplayCurrency, writeOrders, writeRecords, writeSaved,
@@ -162,10 +163,14 @@ export default function BuyerPage() {
   const sortOptions = display ? [...SORT_OPTIONS, ...PRICE_SORT_OPTIONS] : SORT_OPTIONS
   const activeSort = sortOptions.some((option) => option.value === sort) ? sort : 'newest'
   const priceState = !currency ? 'choose' : fx.status === 'ready' ? 'ready' : fx.status === 'error' ? 'error' : 'loading'
-  const visible = sortRecords(available.filter((record) => matchesBuyerFilters(record, filters, display)), activeSort, display)
+  // Boosted listings lead the results (they pay for position); the rest keep the chosen order.
+  const visible = boostedFirst(sortRecords(available.filter((record) => matchesBuyerFilters(record, filters, display)), activeSort, display))
   const selected = available.find((record) => record.id === selectedId)
   const savedIds = new Set(saved.map((entry) => entry.id))
   const savedItems = savedView(saved, records)
+  // The seller's badges (they come from admin state, never from the seller's own profile).
+  const sellerVerified = verificationStatus(admin, 'seller') === 'verified'
+  const sellerPro = isPro(admin, 'seller')
 
   function handleFilterChange(event) {
     const { name, value, type, checked } = event.target
@@ -241,6 +246,8 @@ export default function BuyerPage() {
           items={savedItems}
           display={display}
           seller={seller}
+          verified={sellerVerified}
+          pro={sellerPro}
           onView={setSelectedId}
           onRemove={(id) => removeFromSaved(id, savedItems.find((item) => item.entry.id === id)?.label ?? 'saved')}
           onBrowse={() => setView('browse')}
@@ -272,6 +279,8 @@ export default function BuyerPage() {
         )}
         onSortChange={(event) => setSort(event.target.value)}
         onView={setSelectedId}
+        verified={sellerVerified}
+        pro={sellerPro}
       />
       )}
 

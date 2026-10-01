@@ -8,7 +8,7 @@ const GONE_TEXT = {
 
 // The buyer's saved listings. One that has been sold or taken down stays on the list, named and
 // marked "No longer available", so the buyer is told rather than left wondering where it went.
-export default function SavedList({ items, display, seller, onView, onRemove, onBrowse }) {
+export default function SavedList({ items, display, seller, onView, onRemove, onBrowse, verified = false, pro = false }) {
   return (
     <section className="records" aria-labelledby="saved-heading">
       <div className="section-heading">
@@ -31,7 +31,7 @@ export default function SavedList({ items, display, seller, onView, onRemove, on
           {items.map(({ entry, record, state, available, label }) => (
             <li className={`record${available ? '' : ' record-gone'}`} key={entry.id}>
               {available ? (
-                <ListingSummary record={record} buyerView seller={seller} display={display} />
+                <ListingSummary record={record} buyerView seller={seller} display={display} verified={verified} pro={pro} />
               ) : (
                 <div className="record-main">
                   <div className="record-copy">

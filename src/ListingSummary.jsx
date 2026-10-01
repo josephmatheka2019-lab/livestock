@@ -1,10 +1,13 @@
 import { moneyLabel, moneyParts } from './currency.js'
 import { animalLabel, bulkSaving, formatDay, isNewListing, paymentLabels, termTags } from './listing.js'
+import { isBoosted } from './store.js'
 
 // The photo and text of one listing, shared by the seller's list, the buyer's list
 // and the seller's "how buyers will see this" preview so they cannot drift apart.
 // `buyerView` adds what a buyer browsing the list sees: who is selling, a New tag and the bulk saving.
-export default function ListingSummary({ record, showStatus = false, display = null, buyerView = false, seller = null }) {
+// `verified` / `pro` are the seller's badges (from admin state); the Boosted badge comes from the
+// listing itself. Buyers never see what any of them cost.
+export default function ListingSummary({ record, showStatus = false, display = null, buyerView = false, seller = null, verified = false, pro = false }) {
   const isSold = record.status === 'sold'
   const facts = [
     record.breed && `Breed: ${record.breed}`,
@@ -28,6 +31,9 @@ export default function ListingSummary({ record, showStatus = false, display = n
           {animalLabel(record)}
           {showStatus && <span className={`badge ${isSold ? 'badge-sold' : record.paused ? 'badge-paused' : 'badge-available'}`}>{isSold ? 'Sold' : record.paused ? 'Paused' : 'Available'}</span>}
           {isNew && <span className="badge badge-new">New</span>}
+          {isBoosted(record) && <span className="badge badge-boosted">Boosted</span>}
+          {verified && <span className="badge badge-verified">Verified</span>}
+          {pro && <span className="badge badge-pro">Pro</span>}
         </h3>
         {sellerName && (
           <p className="listing-seller">

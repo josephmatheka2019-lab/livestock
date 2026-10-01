@@ -1,18 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
-import { readAdmin, readOrders, readProfile, readRecords, writeOrders, writeProfile, writeRecords } from './storage.js'
+import { readAdmin, readOrders, readProfile, readRecords, writeAdmin, writeOrders, writeProfile, writeRecords } from './storage.js'
 import { acceptOrder, cancelOrder, cleanOrders, completeOrder, declineOrder } from './orders.js'
 import { accountStatus, cleanAdminState, isAdminBlocked, isHeld } from './admin.js'
+import {
+  BOOST_DAYS, endPro, isPro, PRO_DAYS, recordSale, requestVerification, startPro, STORE_PRICES,
+  summarizeOrdersForSeller, verificationStatus, withBoost,
+} from './store.js'
 import {
   animalLabel, FIELD_IDS, matchesFilters, SELLER_SORT_OPTIONS, sortRecords, validateListing, withPaused, withStatus,
 } from './listing.js'
 import { DEFAULT_CURRENCY } from './currency.js'
 import { processPhoto } from './photo.js'
 import ConfirmDelete from './ConfirmDelete.jsx'
+import ConfirmDialog from './ConfirmDialog.jsx'
 import ListingForm from './ListingForm.jsx'
 import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 import OrdersPanel from './OrdersPanel.jsx'
 import SellerProfile from './SellerProfile.jsx'
+import SellerStore from './SellerStore.jsx'
 import SellerSummary from './SellerSummary.jsx'
 import SiteHeader from './SiteHeader.jsx'
 import { emptyProfile, isProfileComplete } from './sellerProfile.js'
@@ -74,6 +80,9 @@ export default function SellerPage() {
   const [orderError, setOrderError] = useState('')
   const [view, setView] = useState('listings')
   const [admin, setAdmin] = useState(() => cleanAdminState(readAdmin()))
+  const [storeError, setStoreError] = useState('')
+  // The listing waiting for its boost confirmation, if any.
+  const [pendingBoost, setPendingBoost] = useState(null)
 
   // The admin can suspend or terminate this account; a suspended seller may still read
   // everything but cannot post, change or act on orders.
@@ -123,6 +132,57 @@ export default function SellerPage() {
   const cancelMyOrder = (id) => applyOrderChange(cancelOrder(orders, records, id), 'Order cancelled. The animals are back on sale.')
   // A payment the admin is holding blocks completion until it is released.
   const completeMyOrder = (id) => applyOrderChange(completeOrder(orders, records, id, new Date(), isHeld(admin, id)), 'Order marked completed.')
+
+  // Store purchases change admin state, so they are written straight through and announced.
+  function saveAdminState(next, message) {
+    if (!writeAdmin(next)) {
+      setStoreError('This browser could not save the change. Check that storage is not blocked, then try again.')
+      return
+    }
+    setAdmin(next)
+    setStoreError('')
+    announce(message)
+  }
+
+  function buyVerification() {
+    if (blocked) { setStoreError(blockMessage); return }
+    if (!profileComplete) {
+      setStoreError('Finish your seller profile first — the admin checks those details before approving a badge.')
+      return
+    }
+    const asked = requestVerification(admin, 'seller')
+    if (asked.error) { setStoreError(asked.error); return }
+    const price = STORE_PRICES.verification
+    saveAdminState(recordSale(asked.admin, 'verification', price),
+      `Verification requested. ${price.amount} ${price.currency} recorded (demo payment).`)
+  }
+
+  function buyPro() {
+    if (blocked) { setStoreError(blockMessage); return }
+    const started = startPro(admin, 'seller')
+    if (started.error) { setStoreError(started.error); return }
+    const price = STORE_PRICES.pro
+    saveAdminState(recordSale(started.admin, 'pro', price),
+      `Seller Pro is active for ${PRO_DAYS} days. ${price.amount} ${price.currency} recorded (demo payment).`)
+  }
+
+  function stopPro() {
+    const ended = endPro(admin, 'seller')
+    if (ended.error) { setStoreError(ended.error); return }
+    saveAdminState(ended.admin, 'Seller Pro ended. The Pro badge is off your listings.')
+  }
+
+  // A boost is confirmed in the dialog below, then applied to the record and sold in the ledger.
+  function confirmBoost() {
+    const record = pendingBoost
+    setPendingBoost(null)
+    if (!record) return
+    if (blocked) { setStoreError(blockMessage); return }
+    setRecords((current) => current.map((item) => (item.id === record.id ? withBoost(item) : item)))
+    const price = STORE_PRICES.boost
+    saveAdminState(recordSale(admin, 'boost', price),
+      `${animalLabel(record)} boosted for ${BOOST_DAYS} days. ${price.amount} ${price.currency} recorded (demo payment).`)
+  }
 
   // The form only exists once open, so move into it after it has appeared.
   useEffect(() => {
@@ -362,6 +422,16 @@ export default function SellerPage() {
 
       {blocked && <p className="notice" role="alert">{blockMessage}</p>}
 
+      <SellerStore
+        admin={admin}
+        blocked={blocked ? blockMessage : ''}
+        error={storeError}
+        ordersSummary={summarizeOrdersForSeller(orders)}
+        onVerify={buyVerification}
+        onStartPro={buyPro}
+        onEndPro={stopPro}
+      />
+
       <div className="view-tabs" role="group" aria-label="What to show">
         <button type="button" className={`chip${view === 'listings' ? ' chip-on' : ''}`} aria-pressed={view === 'listings'}
           onClick={() => setView('listings')}>Listings ({records.length})</button>
@@ -406,6 +476,18 @@ export default function SellerPage() {
         />
       )}
 
+      {pendingBoost && (
+        <ConfirmDialog title="Boost this listing?"
+          yesLabel={`Yes, pay ${STORE_PRICES.boost.amount} ${STORE_PRICES.boost.currency} (demo)`} noLabel="No, go back"
+          onYes={confirmBoost} onNo={() => setPendingBoost(null)}>
+          <p className="demo-note">Demonstration only: no real money is taken.</p>
+          <p>
+            Put <strong>{animalLabel(pendingBoost)}</strong> at the top of buyer results for {BOOST_DAYS} days
+            with a <strong>Boosted</strong> badge, for <strong>{STORE_PRICES.boost.amount} {STORE_PRICES.boost.currency}</strong>?
+          </p>
+        </ConfirmDialog>
+      )}
+
       {storageWarning && <p className="notice" role="status">This browser could not save changes. Your list may not survive a refresh.</p>}
 
       {view === 'listings' && selectedRecord && (
@@ -437,6 +519,9 @@ export default function SellerPage() {
         onClearFilters={() => setFilters(emptyFilters)}
         onAddFirst={focusForm}
         headerAction={profileComplete && !formOpen && !blocked ? <button type="button" className="add-listing" onClick={openForm}>+ Add a listing</button> : null}
+        verified={verificationStatus(admin, 'seller') === 'verified'}
+        pro={isPro(admin, 'seller')}
+        onBoost={blocked ? null : setPendingBoost}
         onView={setSelectedId}
         onEdit={startEdit}
         onToggleStatus={toggleStatus}

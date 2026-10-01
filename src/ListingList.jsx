@@ -1,11 +1,13 @@
 import ListingFilters from './ListingFilters.jsx'
 import ListingSummary from './ListingSummary.jsx'
 import SaveButton from './SaveButton.jsx'
-import { animalLabel, SORT_OPTIONS } from './listing.js'
+import { animalLabel, formatDay, SORT_OPTIONS } from './listing.js'
+import { BOOST_DAYS, boostExpiry, isBoosted } from './store.js'
 
 export default function ListingList({
   records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange, sortOptions = SORT_OPTIONS,
   onAddFirst, onView, onEdit, onToggleStatus, onTogglePaused, onDelete, readOnly = false, display = null, filtersNode = null, seller = null, savedIds = null, onToggleSaved = null, headerAction = null,
+  verified = false, pro = false, onBoost = null,
 }) {
   return (
     <section className="records" aria-labelledby="records-heading">
@@ -57,11 +59,19 @@ export default function ListingList({
             const isSold = record.status === 'sold'
             return (
             <li className="record" key={record.id}>
-              <ListingSummary record={record} showStatus={!readOnly} display={display} buyerView={readOnly} seller={seller} />
+              <ListingSummary record={record} showStatus={!readOnly} display={display} buyerView={readOnly} seller={seller} verified={verified} pro={pro} />
               <div className="record-actions">
                 <button type="button" className="secondary" onClick={() => onView(record.id)}>View<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
                 {onToggleSaved && <SaveButton record={record} saved={savedIds.has(record.id)} onToggle={onToggleSaved} />}
                 {!readOnly && <>
+                {onBoost && !isSold && !isBoosted(record) && (
+                  <button type="button" className="secondary" onClick={() => onBoost(record)}>
+                    Boost<span className="visually-hidden"> {animalLabel(record)} listing for {BOOST_DAYS} days (demo payment)</span>
+                  </button>
+                )}
+                {isBoosted(record) && (
+                  <span className="order-wait">Boosted until {formatDay(boostExpiry(record))}</span>
+                )}
                 <button type="button" className="secondary" onClick={() => onToggleStatus(record.id)}>{isSold ? 'Mark available' : 'Mark as sold'}<span className="visually-hidden"> {animalLabel(record)} listing</span></button>
                 {!isSold && (
                   <button type="button" className="secondary" onClick={() => onTogglePaused(record.id)}>

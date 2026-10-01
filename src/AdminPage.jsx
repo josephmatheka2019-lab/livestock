@@ -8,10 +8,15 @@ import {
   ACCOUNT_STATUS_LABELS, accountStatus, cleanAdminState, feeFor, holdPayment, isHeld,
   PLATFORM_FEE_RATE, releasePayment, setAccountStatus, summarizeForAdmin,
 } from './admin.js'
+import {
+  BOOST_DAYS, decideVerification, endPro, boostExpiry, isBoosted, isPro, proUntil,
+  SALE_KIND_LABELS, summarizeStore, verificationStatus, VERIFICATION_LABELS, withoutBoost,
+} from './store.js'
+import { animalLabel, formatDay } from './listing.js'
 import { sortOrders } from './orders.js'
 import {
-  clearAdminSession, readAdmin, readAdminSession, readBuyerProfile, readOrders, readProfile, writeAdmin,
-  writeAdminSession,
+  clearAdminSession, readAdmin, readAdminSession, readBuyerProfile, readOrders, readProfile, readRecords,
+  writeAdmin, writeAdminSession, writeRecords,
 } from './storage.js'
 
 function ValueLines({ value }) {
@@ -47,20 +52,24 @@ export default function AdminPage() {
 function AdminDashboard({ session, onSignOut }) {
   const [orders, setOrders] = useState(() => sortOrders(readOrders() ?? []))
   const [admin, setAdmin] = useState(() => cleanAdminState(readAdmin()))
+  const [records, setRecords] = useState(() => readRecords())
   const [error, setError] = useState('')
   const [announcement, setAnnouncement] = useState({ text: '', count: 0 })
-  // { kind: 'hold' | 'release' | 'status', ... } — every admin action asks first.
+  // { kind: 'hold' | 'release' | 'status' | 'verify' | 'end-pro' | 'unboost', ... } — every admin action asks first.
   const [asking, setAsking] = useState(null)
 
   const seller = readProfile()
   const buyer = readBuyerProfile()
   const summary = summarizeForAdmin(orders, admin)
+  const store = summarizeStore(admin)
+  const boosted = records.filter((record) => isBoosted(record))
 
   useEffect(() => {
     document.title = 'Administration – Local Livestock Marketplace'
     const refresh = () => {
       setOrders(sortOrders(readOrders() ?? []))
       setAdmin(cleanAdminState(readAdmin()))
+      setRecords(readRecords())
     }
     window.addEventListener('storage', refresh)
     return () => window.removeEventListener('storage', refresh)
@@ -99,6 +108,37 @@ function AdminDashboard({ session, onSignOut }) {
     saveAdmin(result.admin, held
       ? `Payment for order ${order.id.slice(0, 8).toUpperCase()} is now held by the platform.`
       : `The hold on order ${order.id.slice(0, 8).toUpperCase()} was released.`)
+  }
+
+  // The admin's decision on a seller's verification request (approve shows the badge to buyers).
+  function changeVerification(accountId, approve) {
+    const result = decideVerification(admin, accountId, approve)
+    setAsking(null)
+    if (result.error) { setError(result.error); return }
+    saveAdmin(result.admin, approve
+      ? 'Seller verified. The badge is now showing to buyers.'
+      : 'Verification rejected. The seller can ask again.')
+  }
+
+  // The admin can cut a Pro subscription short (a refund case, say).
+  function cutPro(accountId) {
+    const result = endPro(admin, accountId)
+    setAsking(null)
+    if (result.error) { setError(result.error); return }
+    saveAdmin(result.admin, 'The Pro plan was ended. The badge is off their listings.')
+  }
+
+  // Removing a boost is a listing change, so it goes through the records, not admin state.
+  function removeBoost(record) {
+    setAsking(null)
+    const next = records.map((item) => (item.id === record.id ? withoutBoost(item) : item))
+    if (!writeRecords(next)) {
+      setError('This browser could not save the change. Check that storage is not blocked, then try again.')
+      return
+    }
+    setRecords(next)
+    setError('')
+    announce(`Boost removed from the ${animalLabel(record)} listing.`)
   }
 
   // One row of buttons per account: whatever the status allows right now.
@@ -186,6 +226,11 @@ function AdminDashboard({ session, onSignOut }) {
             <dd className="stat-number">{summary.heldCount}</dd>
             <dd><ValueLines value={summary.heldTotals} /></dd>
           </div>
+          <div className="stat">
+            <dt>Store revenue</dt>
+            <dd><ValueLines value={store.totals} /></dd>
+            <dd className="stat-none">{store.counts.verification} verification · {store.counts.boost} boost · {store.counts.pro} Pro</dd>
+          </div>
         </dl>
         <p className="hint">
           Fees are charged on M-Pesa and card orders once paid; cash orders carry no fee because
@@ -213,6 +258,34 @@ function AdminDashboard({ session, onSignOut }) {
                 <p className="order-ref">{account.who}{account.contact ? ` · ${account.contact}` : ''}</p>
                 {status === 'suspended' && <p className="order-wait">Suspended: cannot place, post or accept orders until reinstated.</p>}
                 {status === 'terminated' && <p className="order-wait">Terminated: locked out for good. Only a new account can trade.</p>}
+
+                {account.id === 'seller' && (
+                  <dl className="admin-fee">
+                    <div><dt>Verification</dt>
+                      <dd>{VERIFICATION_LABELS[verificationStatus(admin, account.id)]}</dd></div>
+                    <div><dt>Seller Pro</dt>
+                      <dd>{isPro(admin, account.id) ? `Active until ${formatDay(proUntil(admin, account.id))}` : 'Not active'}</dd></div>
+                  </dl>
+                )}
+
+                {account.id === 'seller' && verificationStatus(admin, account.id) === 'pending' && (
+                  <div className="actions">
+                    <button type="button" onClick={() => setAsking({ kind: 'verify', accountId: account.id, approve: true })}>
+                      Approve verification
+                    </button>
+                    <button type="button" className="secondary" onClick={() => setAsking({ kind: 'verify', accountId: account.id, approve: false })}>
+                      Reject
+                    </button>
+                  </div>
+                )}
+                {account.id === 'seller' && isPro(admin, account.id) && (
+                  <div className="actions">
+                    <button type="button" className="secondary" onClick={() => setAsking({ kind: 'end-pro', accountId: account.id })}>
+                      End Pro plan
+                    </button>
+                  </div>
+                )}
+
                 {statusActions(account.id)}
               </li>
             )
@@ -268,6 +341,66 @@ function AdminDashboard({ session, onSignOut }) {
         )}
       </section>
 
+      <section className="records" aria-labelledby="boosts-heading">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">BOOSTED LISTINGS</p>
+            <h2 id="boosts-heading" tabIndex={-1}>Promoted <span className="count" aria-live="polite">{boosted.length}</span></h2>
+          </div>
+        </div>
+        {boosted.length === 0 ? (
+          <div className="empty">
+            <h3>No boosts are running.</h3>
+            <p>A seller can boost a listing from their listing card; it then leads buyer results for {BOOST_DAYS} days.</p>
+          </div>
+        ) : (
+          <ul className="order-list">
+            {boosted.map((record) => (
+              <li className="order-card" key={record.id}>
+                <div className="order-head">
+                  <h3>{animalLabel(record)} · {record.quantity} head</h3>
+                  <span className="badge badge-boosted">Boosted</span>
+                </div>
+                <p className="order-ref">{record.location ? `${record.location} · ` : ''}Boosted until {formatDay(boostExpiry(record))}</p>
+                <div className="actions">
+                  <button type="button" className="danger" onClick={() => setAsking({ kind: 'unboost', record })}>
+                    Remove boost<span className="visually-hidden"> from the {animalLabel(record)} listing</span>
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="records" aria-labelledby="sales-heading">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">STORE SALES</p>
+            <h2 id="sales-heading" tabIndex={-1}>Extras sold <span className="count" aria-live="polite">{store.count}</span></h2>
+          </div>
+        </div>
+        <p className="demo-note">Demo payments only: no real money was taken for any of these.</p>
+        {store.count === 0 ? (
+          <div className="empty">
+            <h3>No extras sold yet.</h3>
+            <p>Verification requests, boosts and Pro subscriptions appear here with their fee.</p>
+          </div>
+        ) : (
+          <ul className="order-list">
+            {(admin.sales ?? []).map((sale) => (
+              <li className="order-card" key={sale.id}>
+                <div className="order-head">
+                  <h3>{sale.label}</h3>
+                  <strong>{moneyLabel(sale.amount, sale.currency, null)}</strong>
+                </div>
+                <p className="order-ref">{SALE_KIND_LABELS[sale.kind]} · {formatDay(sale.at, 'long')}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <footer>
         <p>
           Fees follow the monetisation plan in <code>docx/Monetisation Plan.md</code>. A hold is
@@ -311,6 +444,36 @@ function AdminDashboard({ session, onSignOut }) {
             {asking.kind === 'hold'
               ? <>Hold <strong>{moneyLabel(asking.order.total, asking.order.currency, null)}</strong> for {asking.order.quantity} × {asking.order.listingLabel}? The seller cannot complete this order until you release it.</>
               : <>Release the hold on <strong>{moneyLabel(asking.order.total, asking.order.currency, null)}</strong>? The seller can then complete the order as normal.</>}
+          </p>
+        </ConfirmDialog>
+      )}
+      {asking?.kind === 'verify' && (
+        <ConfirmDialog
+          title={asking.approve ? 'Approve this verification?' : 'Reject this verification?'}
+          yesLabel={asking.approve ? 'Yes, approve' : 'Yes, reject'}
+          noLabel="No, go back"
+          danger={!asking.approve}
+          onYes={() => changeVerification(asking.accountId, asking.approve)}
+          onNo={() => setAsking(null)}>
+          <p>
+            {asking.approve
+              ? 'The Verified badge appears on all their listings to buyers straight away.'
+              : 'The request is refused; the seller keeps their data and can ask again after fixing any problems.'}
+          </p>
+        </ConfirmDialog>
+      )}
+      {asking?.kind === 'end-pro' && (
+        <ConfirmDialog title="End this Pro plan?" yesLabel="Yes, end plan" noLabel="No, keep it" danger
+          onYes={() => cutPro(asking.accountId)} onNo={() => setAsking(null)}>
+          <p>The Pro badge disappears from their listings immediately. The rest of their account is unchanged.</p>
+        </ConfirmDialog>
+      )}
+      {asking?.kind === 'unboost' && (
+        <ConfirmDialog title="Remove this boost?" yesLabel="Yes, remove boost" noLabel="No, keep it" danger
+          onYes={() => removeBoost(asking.record)} onNo={() => setAsking(null)}>
+          <p>
+            The <strong>{animalLabel(asking.record)}</strong> listing goes back to its normal position in buyer
+            results immediately. The sale is not refunded automatically.
           </p>
         </ConfirmDialog>
       )}
