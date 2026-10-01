@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { readOrders, readProfile, readRecords, writeOrders, writeProfile, writeRecords } from './storage.js'
+import { readAdmin, readOrders, readProfile, readRecords, writeOrders, writeProfile, writeRecords } from './storage.js'
 import { acceptOrder, cancelOrder, cleanOrders, completeOrder, declineOrder } from './orders.js'
+import { accountStatus, cleanAdminState, isAdminBlocked, isHeld } from './admin.js'
 import {
   animalLabel, FIELD_IDS, matchesFilters, SELLER_SORT_OPTIONS, sortRecords, validateListing, withPaused, withStatus,
 } from './listing.js'
@@ -72,6 +73,15 @@ export default function SellerPage() {
   const [orders, setOrders] = useState(() => cleanOrders(readOrders()))
   const [orderError, setOrderError] = useState('')
   const [view, setView] = useState('listings')
+  const [admin, setAdmin] = useState(() => cleanAdminState(readAdmin()))
+
+  // The admin can suspend or terminate this account; a suspended seller may still read
+  // everything but cannot post, change or act on orders.
+  const sellerStatus = accountStatus(admin, 'seller')
+  const blocked = sellerStatus !== 'active'
+  const blockMessage = sellerStatus === 'terminated'
+    ? 'Your account has been terminated. You cannot trade on this platform any more.'
+    : 'Your account is suspended. You cannot post listings or act on orders until the admin reinstates it.'
 
   useEffect(() => {
     setStorageWarning(!writeRecords(records))
@@ -84,13 +94,20 @@ export default function SellerPage() {
   useEffect(() => {
     document.title = 'Your listings – Local Livestock Marketplace'
     // Orders (and the stock a buyer's cancellation returns) can change in another tab of this browser.
-    const refresh = () => { setOrders(cleanOrders(readOrders())); setRecords(readRecords()) }
+    const refresh = () => {
+      setOrders(cleanOrders(readOrders())); setRecords(readRecords()); setAdmin(cleanAdminState(readAdmin()))
+    }
     window.addEventListener('storage', refresh)
     return () => window.removeEventListener('storage', refresh)
   }, [])
 
   // Accepting or cancelling an order moves animals on or off the listing, so both lists change together.
+  // Nothing goes through while the account is suspended or terminated.
   function applyOrderChange(result, message) {
+    if (blocked) {
+      setOrderError(blockMessage)
+      return
+    }
     if (result.error) {
       setOrderError(result.error)
       return
@@ -104,7 +121,8 @@ export default function SellerPage() {
   const acceptMyOrder = (id) => applyOrderChange(acceptOrder(orders, records, id), 'Order accepted. The animals are held for the buyer.')
   const declineMyOrder = (id) => applyOrderChange(declineOrder(orders, records, id), 'Order declined.')
   const cancelMyOrder = (id) => applyOrderChange(cancelOrder(orders, records, id), 'Order cancelled. The animals are back on sale.')
-  const completeMyOrder = (id) => applyOrderChange(completeOrder(orders, records, id), 'Order marked completed.')
+  // A payment the admin is holding blocks completion until it is released.
+  const completeMyOrder = (id) => applyOrderChange(completeOrder(orders, records, id, new Date(), isHeld(admin, id)), 'Order marked completed.')
 
   // The form only exists once open, so move into it after it has appeared.
   useEffect(() => {
@@ -177,6 +195,9 @@ export default function SellerPage() {
 
   function handleSubmit(event) {
     event.preventDefault()
+    // A suspended or terminated seller cannot add or change listings either; the banner
+    // at the top of the page says why nothing is happening.
+    if (blocked) return
     const found = validateListing(form)
     const firstInvalid = Object.keys(FIELD_IDS).find((name) => found[name])
     if (firstInvalid) {
@@ -220,6 +241,7 @@ export default function SellerPage() {
 
   function startEdit(record) {
     // Editing needs the listing form, which stays locked until the profile is done.
+    if (blocked) return
     if (!profileComplete) {
       focusProfile()
       return
@@ -257,6 +279,7 @@ export default function SellerPage() {
   }
 
   function toggleStatus(id) {
+    if (blocked) return
     const target = records.find((record) => record.id === id)
     if (target) {
       const nowSold = (target.status ?? 'available') !== 'sold'
@@ -271,6 +294,7 @@ export default function SellerPage() {
 
   // Pausing hides a listing from buyers without selling or deleting it; resuming puts it back.
   function togglePaused(id) {
+    if (blocked) return
     const target = records.find((record) => record.id === id)
     if (!target || target.status === 'sold') return
     const pausing = !target.paused
@@ -294,6 +318,7 @@ export default function SellerPage() {
   }
 
   function requestDelete(id) {
+    if (blocked) return
     deleteTrigger.current = document.activeElement
     setPendingDeleteId(id)
   }
@@ -334,6 +359,8 @@ export default function SellerPage() {
       </div>
 
       <SellerProfile profile={profile} onSave={saveProfile} />
+
+      {blocked && <p className="notice" role="alert">{blockMessage}</p>}
 
       <div className="view-tabs" role="group" aria-label="What to show">
         <button type="button" className={`chip${view === 'listings' ? ' chip-on' : ''}`} aria-pressed={view === 'listings'}
@@ -409,7 +436,7 @@ export default function SellerPage() {
         onFilterChange={handleFilterChange}
         onClearFilters={() => setFilters(emptyFilters)}
         onAddFirst={focusForm}
-        headerAction={profileComplete && !formOpen ? <button type="button" className="add-listing" onClick={openForm}>+ Add a listing</button> : null}
+        headerAction={profileComplete && !formOpen && !blocked ? <button type="button" className="add-listing" onClick={openForm}>+ Add a listing</button> : null}
         onView={setSelectedId}
         onEdit={startEdit}
         onToggleStatus={toggleStatus}

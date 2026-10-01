@@ -86,6 +86,7 @@ export default function Landing() {
         <p>
           You can switch between seller and buyer at any time.{' '}
           <a href="/previous/">See the previous design</a> to compare.
+          {' '}<a href="#/admin">Admin</a>
         </p>
       </footer>
     </main>

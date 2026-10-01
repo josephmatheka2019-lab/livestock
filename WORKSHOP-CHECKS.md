@@ -121,14 +121,13 @@ Two things to know first:
 
 ### Details, ordering and contact
 - [ ] **View** opens the full details above the list, with the **Order this** form and, below it,
-  **Questions? Contact the seller**.
-- [ ] Before the buyer adds their details, the contact box shows the seller's name and place but **not** the
-  phone number, with an **Add my details** button that opens the buyer form. The order form shows the same
-  invitation instead of a **Place order** button.
-- [ ] After saving name and phone, the seller's number, a **Call** button and (where possible) a
-  **WhatsApp** button appear. WhatsApp opens in a new tab with a ready message about that listing.
-- [ ] A seller number without a country code on a listing not priced in KES shows only **Call**, with a
-  short explanation.
+  **Contact stays on the platform**.
+- [ ] The contact box shows the seller's business name and place but **never a phone number**, and
+  says questions go in the order's note. There are no Call or WhatsApp buttons anywhere.
+- [ ] The order form shows an **Add my details** invitation instead of a **Place order** button until
+  the buyer has saved their name and phone.
+- [ ] On an order, the seller sees the buyer's **name only** (no phone number) and the buyer sees the
+  seller's **business name only** — check both sides of the same order.
 - [ ] Entering a quantity shows the price each and the order total. **Whole lot** fills in the full stock and,
   if there is a bulk price, shows it and "You save …".
 - [ ] `0`, `2.5`, empty and a number above the stock show a clear message, not a price.
@@ -162,6 +161,24 @@ Two things to know first:
 - [ ] The buyer's name and phone appear only on the buyer page; the seller's profile is not changed by
   anything a buyer does.
 
+## E2. Admin (#/admin)
+
+- [ ] The **Admin** link in the first screen's footer opens the admin page; it shows the **Admin** pill
+  in the header with **Back to the site**.
+- [ ] The stats row shows the order count (open and completed), the value of completed orders, the
+  **2% platform fee**, and what is **held in escrow** — all per currency, never mixed.
+- [ ] Each transaction card shows its **Platform fee** (M-Pesa/card orders) or **None (cash)**.
+- [ ] **Hold payment** (on a paid order) asks first; after holding, the card says **Held by the
+  platform**, the escrow stat rises, and the seller's **Mark completed** fails with a clear message.
+- [ ] **Release payment** asks first; the seller can then complete the order as normal.
+- [ ] **Suspend** asks first: the seller/buyer page shows a banner, the **+ Add a listing** button
+  disappears, order actions do nothing, and the buyer's **Place order** / **Pay now** buttons are
+  replaced by the reason. **Reinstate** restores everything.
+- [ ] **Terminate** warns it cannot be undone; afterwards **Reinstate** is not offered and every
+  status change on that account is refused.
+- [ ] Every admin action is confirmed first (**No, go back** and Escape change nothing), and the
+  changes survive a refresh.
+
 ## F. When things go wrong
 
 - [ ] If the browser cannot save (storage blocked), the seller page shows a warning instead of crashing.
@@ -175,9 +192,11 @@ Two things to know first:
 ## Expected behaviour that is not a failure
 
 - Buyers on another device see nothing: the data lives in one browser until accounts are connected.
-- The seller's phone number is hidden on screen until the buyer adds their details, but it is still in the
-  browser's storage; real protection comes with accounts.
+- Phone numbers never appear on screen on either side, but they are still in the browser's storage;
+  real protection comes with accounts.
 - Converted prices are approximate and change day to day.
 - There is no sign-in yet. Payments in the app are a demonstration and there is no messaging by design:
-  buying happens by placing an order, buyers can still call or use WhatsApp with questions, and cannot
-  propose a price.
+  buying happens by placing an order, questions go in the order's note, and buyers cannot propose a
+  price.
+- The admin page (#/admin) has no login yet: anyone who knows the address can use it. Protect it
+  before the site goes public.

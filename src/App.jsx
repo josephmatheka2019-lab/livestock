@@ -1,3 +1,4 @@
+import AdminPage from './AdminPage.jsx'
 import AuthPage from './AuthPage.jsx'
 import BuyerPage from './BuyerPage.jsx'
 import Landing from './Landing.jsx'
@@ -14,5 +15,6 @@ export default function App() {
   if (route === '/buyer/login') return <AuthPage role="buyer" />
   if (route === '/seller') return <SellerPage />
   if (route === '/buyer') return <BuyerPage />
+  if (route === '/admin') return <AdminPage />
   return <Landing />
 }

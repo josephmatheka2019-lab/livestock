@@ -179,9 +179,11 @@ export function payOrder(orders, listings, orderId, now = new Date()) {
 }
 
 // The seller marks it done once the animals are delivered: after payment, or for cash once accepted.
-export function completeOrder(orders, listings, orderId, now = new Date()) {
+// A payment the admin is holding (escrow) blocks completion until it is released.
+export function completeOrder(orders, listings, orderId, now = new Date(), held = false) {
   const order = orders.find((item) => item.id === orderId)
   if (!order) return fail(orders, listings, 'That order no longer exists.')
+  if (held) return fail(orders, listings, 'The admin is holding this payment (escrow). It must be released before the order can be completed.')
   const ready = order.status === 'paid' || (order.status === 'accepted' && !ONLINE_METHODS.includes(order.paymentMethod))
   if (!ready) {
     return fail(orders, listings, order.status === 'accepted' ? 'Wait for the buyer to pay before completing this order.' : 'This order cannot be completed yet.')

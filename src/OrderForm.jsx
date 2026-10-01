@@ -9,7 +9,8 @@ import {
 
 // "How many do you want?" through to placing the order. The price works out as the buyer types; pressing
 // Place order checks everything, then asks "Place this order?" before anything is sent to the seller.
-export default function OrderForm({ record, display = null, buyer, buyerReady, orders, seller, onPlace, onNeedProfile, onViewOrders }) {
+// `blocked` (set when the admin has suspended the account) replaces the Place order button with the reason.
+export default function OrderForm({ record, display = null, buyer, buyerReady, orders, seller, blocked = '', onPlace, onNeedProfile, onViewOrders }) {
   const [form, setForm] = useState(emptyOrderForm)
   const [errors, setErrors] = useState({})
   const [confirming, setConfirming] = useState(false)
@@ -47,6 +48,8 @@ export default function OrderForm({ record, display = null, buyer, buyerReady, o
 
   function submit(event) {
     event.preventDefault()
+    // A blocked account cannot get to the confirmation dialog at all, even by pressing Enter.
+    if (blocked) return
     const found = validateOrder(record, form, buyer, orders)
     // The buyer-details and duplicate messages have their own place on the page; the rest sit by their fields.
     setErrors(found)
@@ -140,7 +143,11 @@ export default function OrderForm({ record, display = null, buyer, buyerReady, o
         {errors.duplicate && <p className="error" role="alert">{errors.duplicate}</p>}
         {errors.buyer && <p className="error" role="alert">{errors.buyer}</p>}
 
-        {buyerReady ? (
+        {blocked ? (
+          <div className="contact-locked" role="alert">
+            <p>{blocked}</p>
+          </div>
+        ) : buyerReady ? (
           <div className="actions"><button type="submit">Place order</button></div>
         ) : (
           <div className="contact-locked">

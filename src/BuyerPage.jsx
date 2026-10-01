@@ -19,8 +19,9 @@ import { emptyBuyerProfile, isBuyerProfileComplete } from './buyerProfile.js'
 import { addSaved, cleanSaved, isSaved, removeSaved, savedView } from './saved.js'
 import { animalLabel } from './listing.js'
 import { cancelOrder, cleanOrders, isOpen, payOrder } from './orders.js'
+import { accountStatus, cleanAdminState } from './admin.js'
 import {
-  readBuyerProfile, readDisplayCurrency, readOrders, readProfile, readRecords, readSaved, writeBuyerProfile,
+  readAdmin, readBuyerProfile, readDisplayCurrency, readOrders, readProfile, readRecords, readSaved, writeBuyerProfile,
   writeDisplayCurrency, writeOrders, writeRecords, writeSaved,
 } from './storage.js'
 
@@ -43,12 +44,22 @@ export default function BuyerPage() {
   const [announcement, setAnnouncement] = useState({ text: '', count: 0 })
   const [orders, setOrders] = useState(() => cleanOrders(readOrders()))
   const [orderError, setOrderError] = useState('')
+  const [admin, setAdmin] = useState(() => cleanAdminState(readAdmin()))
+
+  // The admin can suspend or terminate this account; a blocked buyer can browse but
+  // cannot place orders or pay.
+  const buyerStatus = accountStatus(admin, 'buyer')
+  const blocked = buyerStatus !== 'active'
+  const blockMessage = buyerStatus === 'terminated'
+    ? 'Your account has been terminated. You cannot place orders on this platform any more.'
+    : 'Your account is suspended. You cannot place orders until the admin reinstates it.'
 
   useEffect(() => {
     document.title = 'Find livestock – Local Livestock Marketplace'
     // Pick up listings, seller details, saved listings and orders changed in another tab of this browser.
     const refresh = () => {
-      setRecords(readRecords()); setSeller(readProfile()); setSaved(cleanSaved(readSaved())); setOrders(cleanOrders(readOrders()))
+      setRecords(readRecords()); setSeller(readProfile()); setSaved(cleanSaved(readSaved()))
+      setOrders(cleanOrders(readOrders())); setAdmin(cleanAdminState(readAdmin()))
     }
     window.addEventListener('storage', refresh)
     return () => window.removeEventListener('storage', refresh)
@@ -84,7 +95,12 @@ export default function BuyerPage() {
   }
 
   // The order was already confirmed with "Yes, place order" in the form.
+  // Nothing goes through while the account is suspended or terminated.
   function placeOrder(order) {
+    if (blocked) {
+      setOrderError(blockMessage)
+      return
+    }
     setOrderError('')
     setOrders((current) => [order, ...current])
     announce(`Order placed for ${order.quantity} ${order.listingLabel}. The seller will accept or decline it.`)
@@ -92,6 +108,10 @@ export default function BuyerPage() {
 
   // A change to an order can also change a listing's stock (cancelling an accepted order returns the animals).
   function applyOrderChange(result, message) {
+    if (blocked) {
+      setOrderError(blockMessage)
+      return
+    }
     if (result.error) {
       setOrderError(result.error)
       return
@@ -163,6 +183,8 @@ export default function BuyerPage() {
 
       <BuyerProfile profile={profile} onSave={saveProfile} openRequest={profileRequests} />
 
+      {blocked && <p className="notice" role="alert">{blockMessage}</p>}
+
       <CurrencyPicker value={currency} onChange={chooseCurrency} status={fx.status} date={fx.date} stale={fx.stale} />
 
       {selected && (
@@ -179,19 +201,14 @@ export default function BuyerPage() {
             display={display}
             buyer={profile}
             buyerReady={isBuyerProfileComplete(profile)}
+            blocked={blocked ? blockMessage : ''}
             orders={orders}
             seller={seller}
             onPlace={placeOrder}
             onNeedProfile={() => setProfileRequests((count) => count + 1)}
             onViewOrders={() => setView('orders')}
           />
-          <SellerContact
-            record={selected}
-            seller={seller}
-            buyer={profile}
-            buyerReady={isBuyerProfileComplete(profile)}
-            onNeedProfile={() => setProfileRequests((count) => count + 1)}
-          />
+          <SellerContact seller={seller} />
         </ListingDetails>
       )}
 
@@ -214,6 +231,7 @@ export default function BuyerPage() {
           display={display}
           seller={seller}
           error={orderError}
+          blocked={blocked ? blockMessage : ''}
           onCancel={cancelMyOrder}
           onPay={payMyOrder}
           onBrowse={() => setView('browse')}

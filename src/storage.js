@@ -123,3 +123,24 @@ export function writeOrders(orders) {
     return false
   }
 }
+
+const ADMIN_KEY = 'livestock-admin'
+
+// Raw admin state (account statuses and payment holds); admin.js checks and cleans it.
+export function readAdmin() {
+  try {
+    return JSON.parse(window.localStorage.getItem(ADMIN_KEY))
+  } catch {
+    return null
+  }
+}
+
+export function writeAdmin(state) {
+  try {
+    window.localStorage.setItem(ADMIN_KEY, JSON.stringify(state))
+    return true
+  } catch {
+    return false
+  }
+}
+

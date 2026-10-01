@@ -29,10 +29,15 @@ has its own page.
 - Open a listing to see the full details, choose how many you want and how to pay, then place the order.
   A confirmation asks **Place this order?** before it goes to the seller, who accepts or declines it.
   You see the outcome under **My orders**, and when an M-Pesa or card order is accepted you are asked
-  whether to pay then (a demonstration; cash orders skip that and are paid on delivery). You can also
-  see the seller's phone with Call and WhatsApp buttons once you have added your own name and number.
+  whether to pay then (a demonstration; cash orders skip that and are paid on delivery). Phone numbers
+  stay hidden on both sides — questions go in the order's note.
 - Save listings for later. A saved listing that is sold, paused or deleted stays on the list, marked
   as no longer available.
+
+**Admin** (`#/admin`)
+- See every transaction with the platform fee on it, the totals completed, and what is held in escrow.
+- Hold a payment (escrow) so the seller cannot complete the order until it is released.
+- Suspend or terminate the seller or buyer account; reinstate a suspended one. Every action asks first.
 
 ## Requirements
 
@@ -60,6 +65,7 @@ To build and preview a production version:
 | `#/seller` | The seller page |
 | `#/buyer` | The buyer page |
 | `#/seller/login`, `#/buyer/login` | Sign-in and sign-up pages. Built, but not linked yet and switched off until accounts are connected |
+| `#/admin` | The admin page: transactions and fees, escrow holds, suspend / terminate accounts. **No login yet — protect it before going public** |
 
 Any other address shows the first screen.
 
@@ -81,16 +87,17 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
   browser's local storage. A buyer on another phone or computer cannot see a seller's listings, and
   clearing the site's data deletes them. The app shows a warning if the browser cannot save.
 - **There are no accounts yet.** Sellers and buyers are not signed in, so the roles are a convenience, not
-  security. The seller's phone number is hidden from a buyer who has not added their details, but it is
-  still in the browser's storage. The database rules that enforce this properly are written (see below)
-  but not connected.
+  security. Phone numbers are hidden on screen on both sides, but they are still in the browser's
+  storage. The database rules that enforce this properly are written (see below) but not connected.
 - **No real payments.** Payment methods are recorded on the order, and paying in the app is a
   demonstration: the app takes no money. Cash is paid to the seller on delivery.
 - **Converted prices are approximate.** They use a free daily rates service, fetched only when a buyer
   asks for a converted currency. A buyer pays in the seller's own currency.
 - **No messaging, by design.** Buying happens by placing an order, not by chatting: there is no enquiry
-  form or inbox, and buyers cannot propose a price — the seller's price is the price. Buyers can still
-  call or WhatsApp the seller with questions.
+  form or inbox, and buyers cannot propose a price — the seller's price is the price.
+- **Contact details never cross sides.** The buyer never sees the seller's phone number and the seller
+  never sees the buyer's, so deals cannot be taken off the platform. Questions go in the order's note;
+  arrangement and payment happen through the order.
 - Photos are shrunk to small thumbnails so they fit in the browser's roughly 5 MB of storage.
 
 ## Project map
@@ -100,10 +107,10 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 - `src/SellerPage.jsx` and `SellerProfile`, `ListingForm`, `ListingPreview`, `SellerSummary`, `ConfirmDelete`: the seller side
 - `src/BuyerPage.jsx` and `BuyerProfile`, `BuyerFilters`, `CurrencyPicker`, `OrderForm`, `SellerContact`, `SavedList`, `SaveButton`, `MyOrders`: the buyer side
 - `src/orders.js`, `OrderCard.jsx`, `OrdersPanel.jsx`, `ConfirmDialog.jsx`: order rules and the yes/no confirmations, shared by both sides
+- `src/AdminPage.jsx`, `admin.js`: the admin page — fees, escrow holds, account status
 - `src/ListingList.jsx`, `ListingSummary.jsx`, `ListingDetails.jsx`: shared by both sides (`ListingFilters.jsx` is the seller's filter bar)
 - `src/listing.js`: listing rules (validation, filtering, sorting, sold / paused state, quotes)
 - `src/currency.js`, `src/rates.js`: currencies, formatting and exchange rates
-- `src/contact.js`: Call and WhatsApp links
 - `src/saved.js`, `sellerProfile.js`, `buyerProfile.js`, `profileRules.js`, `photo.js`: smaller helpers
 - `src/storage.js`: safe read and write of everything kept in the browser
 - `src/auth.js`, `AuthPage.jsx`, `authValidation.js`: the sign-in pages, waiting for accounts
@@ -120,6 +127,7 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 | `livestock-buyer-profile` | The buyer's name, phone and location |
 | `livestock-saved-listings` | The buyer's saved listings |
 | `livestock-orders` | The orders buyers have placed, and their status |
+| `livestock-admin` | Admin state: suspended / terminated accounts and payments held in escrow |
 | `livestock-display-currency` | The currency the buyer chose to see prices in |
 | `livestock-exchange-rates` | Today's exchange rates, kept for 12 hours |
 

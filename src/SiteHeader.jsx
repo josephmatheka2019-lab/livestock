@@ -22,8 +22,8 @@ export default function SiteHeader({ role = null }) {
       </a>
       {role && (
         <p className="role-pill" style={{ margin: 0 }}>
-          <span>{role === 'seller' ? 'Seller' : 'Buyer'}</span>
-          <a href="#/">Switch role</a>
+          <span>{role === 'seller' ? 'Seller' : role === 'admin' ? 'Admin' : 'Buyer'}</span>
+          <a href="#/">{role === 'admin' ? 'Back to the site' : 'Switch role'}</a>
         </p>
       )}
     </header>

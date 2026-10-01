@@ -27,7 +27,8 @@ function rememberPrompt(ids, id) {
 }
 
 // The buyer's orders and what they can do next with each one. Cancelling and paying both ask first.
-export default function MyOrders({ orders, display, seller, error, onCancel, onPay, onBrowse }) {
+// `blocked` (set when the admin has suspended the account) hides the pay button with the reason.
+export default function MyOrders({ orders, display, seller, error, blocked = '', onCancel, onPay, onBrowse }) {
   const [asking, setAsking] = useState(null) // { kind: 'cancel' | 'pay', order, auto? }
   const prompted = useRef(null)
   const list = sortOrders(orders)
@@ -37,14 +38,15 @@ export default function MyOrders({ orders, display, seller, error, onCancel, onP
 
   // The seller accepted an order paid by M-Pesa or card, so ask the buyer whether to pay now.
   // Cash is deliberately left out: it is paid on delivery, so there is nothing to ask about.
+  // A blocked account is never asked.
   useEffect(() => {
-    if (asking) return
+    if (asking || blocked) return
     const next = sortOrders(orders).find((order) => order.status === 'accepted'
       && ONLINE_METHODS.includes(order.paymentMethod) && !prompted.current.has(order.id))
     if (!next) return
     rememberPrompt(prompted.current, next.id)
     setAsking({ kind: 'pay', order: next, auto: true })
-  }, [orders, asking])
+  }, [orders, asking, blocked])
 
   return (
     <section className="records" aria-labelledby="orders-heading">
@@ -67,8 +69,11 @@ export default function MyOrders({ orders, display, seller, error, onCancel, onP
         <ul className="order-list">
           {list.map((order) => (
             <OrderCard key={order.id} order={order} role="buyer" display={display} seller={seller}>
-              {order.status === 'accepted' && ONLINE_METHODS.includes(order.paymentMethod) && (
+              {order.status === 'accepted' && ONLINE_METHODS.includes(order.paymentMethod) && !blocked && (
                 <button type="button" onClick={() => setAsking({ kind: 'pay', order })}>Pay now (demo)</button>
+              )}
+              {order.status === 'accepted' && ONLINE_METHODS.includes(order.paymentMethod) && blocked && (
+                <span className="order-wait">{blocked}</span>
               )}
               {order.status === 'accepted' && !ONLINE_METHODS.includes(order.paymentMethod) && (
                 <span className="order-wait">Accepted: pay the seller in cash on delivery.</span>

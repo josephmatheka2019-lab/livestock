@@ -25,7 +25,6 @@
   --notice-bg: #fff5df;
   --notice-line: #edcf8d;
   --danger: #9b2c2c;
-  --whatsapp: #1b7a43;
   --focus: #2563eb;
 
   /* the colour in use on the current page; .role-buyer switches it */
@@ -101,7 +100,6 @@ button:disabled { opacity: .5; cursor: not-allowed; filter: none; }
 button.link { background: none; border: 0; padding: 0; min-height: 0; color: var(--role); text-decoration: underline; font-weight: 700; }
 .button { display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--role); color: white; font-weight: 700; padding: 12px 18px; text-decoration: none; min-height: 44px; }
 .button:hover { filter: brightness(.93); }
-a.button.button-whatsapp { background: var(--whatsapp); }
 .checkbox-group { border: 0; padding: 0; margin: 14px 0 0; }
 .checkbox-group legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
 .check { display: flex; align-items: center; gap: 10px; font-weight: 600; margin: 4px 0; }
@@ -346,3 +344,9 @@ button.chip:hover { filter: none; background: var(--surface-soft); }
 .status-completed { background: var(--green); color: #fff; }
 .status-declined, .status-cancelled { background: #f1e1e1; color: #6e2323; }
 .order .calc-row input { width: 110px; }
+
+/* ------------------------------------------------------------------ admin */
+.role-admin { --role: #6b4ea8; --role-tint: #efe9fb; --role-ink: #4a3382; }
+.admin-fee { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0 0 10px; }
+.admin-fee dt { color: var(--muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.admin-fee dd { margin: 2px 0 0; font-weight: 700; overflow-wrap: anywhere; }
