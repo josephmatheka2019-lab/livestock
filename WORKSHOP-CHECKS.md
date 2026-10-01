@@ -131,6 +131,12 @@ Two things to know first:
 - [ ] Entering a quantity shows the price each and the order total. **Whole lot** fills in the full stock and,
   if there is a bulk price, shows it and "You save …".
 - [ ] `0`, `2.5`, empty and a number above the stock show a clear message, not a price.
+- [ ] Choosing **M-Pesa** reveals **How will you send it?** with three radios — **Till number**,
+  **Paybill**, **Pochi la biashara** — plus a short hint once one is picked. **Place order** without
+  a choice shows an error and puts the cursor on the first radio.
+- [ ] Choosing **Cash** (or card) hides the radios; a channel picked earlier is not sent with the order.
+- [ ] The confirmation dialog, the order card (both buyer and seller views, and the admin's), and the
+  **Pay now** dialog all show the same channel, e.g. "M-Pesa · Till number".
 - [ ] **Place order** without a quantity, payment method or (when delivery is chosen) address shows the
   error by the field and puts the cursor there; nothing is ordered.
 

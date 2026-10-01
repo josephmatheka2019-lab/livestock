@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import ConfirmDialog from './ConfirmDialog.jsx'
 import OrderCard from './OrderCard.jsx'
 import { moneyLabel } from './currency.js'
-import { methodLabel, ONLINE_METHODS, sortOrders } from './orders.js'
+import { methodLabel, mpesaChannelLabel, ONLINE_METHODS, sortOrders } from './orders.js'
 
 // Which accepted orders have already been asked about, so a reload or a tab switch does not ask
 // a second time. Session-only: a new tab of the browser may ask again, which is harmless.
@@ -109,7 +109,7 @@ export default function MyOrders({ orders, display, seller, error, blocked = '',
           {asking.auto && (
             <p>Your order of {asking.order.quantity} × {asking.order.listingLabel} was accepted.</p>
           )}
-          <p>Pay <strong>{money(asking.order)}</strong> by {methodLabel(asking.order.paymentMethod)} for {asking.order.quantity} × {asking.order.listingLabel}?</p>
+          <p>Pay <strong>{money(asking.order)}</strong> by {methodLabel(asking.order.paymentMethod)}{asking.order.mpesaChannel ? ` (${mpesaChannelLabel(asking.order.mpesaChannel)})` : ''} for {asking.order.quantity} × {asking.order.listingLabel}?</p>
         </ConfirmDialog>
       )}
     </section>

@@ -32,7 +32,8 @@ has its own page.
   delivery / vaccinated / health certificate / negotiable.
 - View all prices in another currency (KES, USD, EUR, GBP, KWD and every other currency), converted with
   daily exchange rates. Converted prices are marked as approximate.
-- Open a listing to see the full details, choose how many you want and how to pay, then place the order.
+- Open a listing to see the full details, choose how you want to pay — with M-Pesa you pick
+  **Till number**, **Paybill** or **Pochi la biashara** — then place the order.
   A confirmation asks **Place this order?** before it goes to the seller, who accepts or declines it.
   You see the outcome under **My orders**, and when an M-Pesa or card order is accepted you are asked
   whether to pay then (a demonstration; cash orders skip that and are paid on delivery). Phone numbers

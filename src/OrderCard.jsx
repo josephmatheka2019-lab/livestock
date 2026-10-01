@@ -1,6 +1,6 @@
 import { moneyLabel } from './currency.js'
 import { formatDay } from './listing.js'
-import { methodLabel, STATUS_LABELS } from './orders.js'
+import { methodLabel, mpesaChannelLabel, STATUS_LABELS } from './orders.js'
 
 // One order, as either side sees it. `children` holds the buttons for whoever is looking.
 // Phone numbers never appear here: neither side learns the other's contact details, so the
@@ -22,7 +22,7 @@ export default function OrderCard({ order, role, display = null, seller = null, 
       <dl className="order-grid">
         <div><dt>Total</dt><dd className="order-total">{money(order.total)}</dd></div>
         <div><dt>Price each</dt><dd>{money(order.unitPrice)}{order.usedBulk ? ' (bulk deal applied)' : ''}</dd></div>
-        <div><dt>Payment</dt><dd>{methodLabel(order.paymentMethod)}{order.paymentMethod === 'cash' ? ' on delivery' : ''}</dd></div>
+        <div><dt>Payment</dt><dd>{methodLabel(order.paymentMethod)}{order.mpesaChannel ? ` · ${mpesaChannelLabel(order.mpesaChannel)}` : ''}{order.paymentMethod === 'cash' ? ' on delivery' : ''}</dd></div>
         <div><dt>Delivery</dt><dd>{order.delivery ? `To ${order.delivery}` : 'Buyer collects'}</dd></div>
         {role === 'seller' && (
           <div><dt>Buyer</dt><dd>{order.buyer.name}{order.buyer.location ? ` · ${order.buyer.location}` : ''}</dd></div>

@@ -176,7 +176,7 @@ button.link { background: none; border: 0; padding: 0; min-height: 0; color: var
 .checkbox-group { border: 0; padding: 0; margin: 14px 0 0; }
 .checkbox-group legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
 .check { display: flex; align-items: center; gap: 10px; font-weight: 600; margin: 4px 0; }
-.check input[type="checkbox"] { width: 20px; height: 20px; min-height: 20px; flex-shrink: 0; accent-color: var(--role); }
+.check input[type="checkbox"], .check input[type="radio"] { width: 20px; height: 20px; min-height: 20px; flex-shrink: 0; accent-color: var(--role); }
 .photo-preview { display: flex; align-items: flex-end; gap: 12px; margin: 8px 0 4px; }
 .photo-preview img { width: 120px; height: 90px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
 
@@ -363,7 +363,7 @@ button.chip:hover { filter: none; background: var(--surface-soft); }
 @media (pointer: coarse), (max-width: 520px) {
   button, input, select { min-height: 44px; }
   .bar button, .record-actions button { min-height: 40px; }
-  .check input[type="checkbox"] { min-height: 20px; }
+  .check input[type="checkbox"], .check input[type="radio"] { min-height: 20px; }
 }
 
 /* ------------------------------------------------------------------ additions */

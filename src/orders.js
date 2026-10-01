@@ -32,9 +32,18 @@ export const isOpen = (order) => OPEN_STATUSES.includes(order.status)
 export const ONLINE_METHODS = ['mpesa', 'card']
 export const methodLabel = (value) => PAYMENT_METHODS.find((method) => method.value === value)?.label ?? value
 
+// How the buyer will send M-Pesa money: a till (Buy Goods), a paybill, or Pochi la biashara.
+// Chosen when the order is placed, so both sides and the admin see the same instruction.
+export const MPESA_CHANNELS = [
+  { value: 'till', label: 'Till number', hint: 'Buy Goods: pay to the seller’s till.' },
+  { value: 'paybill', label: 'Paybill', hint: 'Enter the paybill number and the account the seller gives you.' },
+  { value: 'pochi', label: 'Pochi la biashara', hint: 'Send straight to the seller’s business Pochi number.' },
+]
+export const mpesaChannelLabel = (value) => MPESA_CHANNELS.find((channel) => channel.value === value)?.label ?? ''
+
 const round3 = (value) => Math.round(value * 1000) / 1000
 
-export const emptyOrderForm = { quantity: '', paymentMethod: '', wantsDelivery: false, address: '', note: '' }
+export const emptyOrderForm = { quantity: '', paymentMethod: '', mpesaChannel: '', wantsDelivery: false, address: '', note: '' }
 
 // What an order for this many animals costs. Taking the whole lot uses the seller's bulk price when
 // that is cheaper than paying per animal. Null when the listing has no usable price.
@@ -76,6 +85,10 @@ export function validateOrder(record, form, buyer, orders) {
 
   if (!form.paymentMethod) errors.paymentMethod = 'Choose how you will pay.'
   else if (!(record.paymentMethods ?? []).includes(form.paymentMethod)) errors.paymentMethod = 'The seller does not accept that payment method.'
+  // M-Pesa needs to know which way the money will travel: till, paybill or Pochi.
+  else if (form.paymentMethod === 'mpesa' && !MPESA_CHANNELS.some((channel) => channel.value === form.mpesaChannel)) {
+    errors.mpesaChannel = 'Choose how you will pay: Till number, Paybill or Pochi la biashara.'
+  }
 
   if (form.wantsDelivery) {
     if (!record.delivery) errors.address = 'This seller does not offer delivery.'
@@ -102,6 +115,10 @@ export function createOrder(record, form, buyer, now = new Date()) {
     usedBulk: quote.usedBulk,
     currency: quote.currency,
     paymentMethod: form.paymentMethod,
+    // Only meaningful for M-Pesa; kept on the order so both sides see the same instruction.
+    mpesaChannel: form.paymentMethod === 'mpesa' && MPESA_CHANNELS.some((channel) => channel.value === form.mpesaChannel)
+      ? form.mpesaChannel
+      : '',
     delivery: form.wantsDelivery ? form.address.trim() : '',
     note: form.note.trim(),
     buyer: { name: buyer.name, phone: buyer.phone, location: buyer.location ?? '' },
@@ -202,7 +219,14 @@ export function cleanOrders(value) {
       && order.buyer && typeof order.buyer === 'object'
     if (ok) seen.add(order.id)
     return ok
-  }).map((order) => ({ ...order, history: Array.isArray(order.history) ? order.history : [] }))
+  }).map((order) => ({
+    ...order,
+    history: Array.isArray(order.history) ? order.history : [],
+    // Keep only a known M-Pesa channel, and only when the payment method is actually M-Pesa.
+    mpesaChannel: order.paymentMethod === 'mpesa' && MPESA_CHANNELS.some((channel) => channel.value === order.mpesaChannel)
+      ? order.mpesaChannel
+      : '',
+  }))
 }
 
 // Newest first.

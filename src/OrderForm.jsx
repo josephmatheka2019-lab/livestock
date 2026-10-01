@@ -3,8 +3,8 @@ import ConfirmDialog from './ConfirmDialog.jsx'
 import { moneyLabel } from './currency.js'
 import { animalLabel, PAYMENT_METHODS } from './listing.js'
 import {
-  createOrder, emptyOrderForm, isOpen, MAX_ADDRESS, MAX_NOTE, methodLabel, ONLINE_METHODS, orderQuote, STATUS_LABELS,
-  validateOrder,
+  createOrder, emptyOrderForm, isOpen, MAX_ADDRESS, MAX_NOTE, methodLabel, MPESA_CHANNELS, ONLINE_METHODS,
+  orderQuote, STATUS_LABELS, validateOrder,
 } from './orders.js'
 
 // "How many do you want?" through to placing the order. The price works out as the buyer types; pressing
@@ -53,7 +53,13 @@ export default function OrderForm({ record, display = null, buyer, buyerReady, o
     const found = validateOrder(record, form, buyer, orders)
     // The buyer-details and duplicate messages have their own place on the page; the rest sit by their fields.
     setErrors(found)
-    const fieldIds = { quantity: 'order-quantity', paymentMethod: 'order-payment', address: 'order-address', note: 'order-note' }
+    const fieldIds = {
+      quantity: 'order-quantity',
+      paymentMethod: 'order-payment',
+      mpesaChannel: 'order-mpesa-till',
+      address: 'order-address',
+      note: 'order-note',
+    }
     const first = Object.keys(fieldIds).find((name) => found[name])
     if (first) document.getElementById(fieldIds[first])?.focus()
     if (Object.keys(found).length === 0) setConfirming(true)
@@ -117,6 +123,33 @@ export default function OrderForm({ record, display = null, buyer, buyerReady, o
           </p>
         )}
 
+        {form.paymentMethod === 'mpesa' && (
+          <fieldset className="checkbox-group" aria-describedby={errors.mpesaChannel ? 'order-mpesa-error' : undefined}>
+            <legend>How will you send it? <span aria-hidden="true">*</span></legend>
+            {MPESA_CHANNELS.map((channel) => (
+              <label className="check" key={channel.value} htmlFor={`order-mpesa-${channel.value}`}>
+                <input
+                  id={`order-mpesa-${channel.value}`}
+                  name="mpesaChannel"
+                  type="radio"
+                  value={channel.value}
+                  checked={form.mpesaChannel === channel.value}
+                  onChange={change}
+                  {...field('mpesaChannel', 'order-mpesa-error')}
+                />
+                {channel.label}
+              </label>
+            ))}
+            {errors.mpesaChannel && <p className="error" id="order-mpesa-error" role="alert">{errors.mpesaChannel}</p>}
+            {form.mpesaChannel && (
+              <p className="hint">
+                {MPESA_CHANNELS.find((channel) => channel.value === form.mpesaChannel)?.hint}
+                {' '}The seller confirms the number when they accept.
+              </p>
+            )}
+          </fieldset>
+        )}
+
         {record.delivery && (
           <>
             <label className="check" htmlFor="order-delivery">
@@ -162,7 +195,7 @@ export default function OrderForm({ record, display = null, buyer, buyerReady, o
           <ul className="confirm-lines">
             <li><strong>{form.quantity} × {animalLabel(record)}</strong>{seller?.businessName ? ` from ${seller.businessName}` : ''}{record.location ? `, ${record.location}` : ''}</li>
             <li>Total: <span className="confirm-total">{money(orderQuote(record, form.quantity).total)}</span>{orderQuote(record, form.quantity).usedBulk ? ' (bulk price for the whole lot)' : ''}</li>
-            <li>Payment: {methodLabel(form.paymentMethod)}{onlineMethod ? ' (after the seller accepts)' : ' on delivery'}</li>
+            <li>Payment: {methodLabel(form.paymentMethod)}{form.paymentMethod === 'mpesa' && form.mpesaChannel ? ` — ${MPESA_CHANNELS.find((channel) => channel.value === form.mpesaChannel)?.label}` : ''}{onlineMethod ? ' (after the seller accepts)' : ' on delivery'}</li>
             {form.wantsDelivery && <li>Deliver to: {form.address.trim()}</li>}
             {form.note.trim() && <li>Note: {form.note.trim()}</li>}
           </ul>
