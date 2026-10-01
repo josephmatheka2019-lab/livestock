@@ -6,6 +6,31 @@ import {
 } from './store.js'
 import { formatDay } from './listing.js'
 
+// The emblems in front of each extra, drawn inline like the rest of the site's icons.
+// An outline tile is a goal still to win; a solid tile means it has been earned.
+const ICONS = {
+  verified: (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 2.5 4.5 5.2v6.1c0 4.6 3 8.5 7.5 9.9 4.5-1.4 7.5-5.3 7.5-9.9V5.2L12 2.5z" />
+      <path d="m8.7 11.9 2.3 2.3 4.3-4.6" />
+    </svg>
+  ),
+  pro: (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M7 4h10v5a5 5 0 0 1-10 0V4z" />
+      <path d="M7 6H4.8C4.3 8.7 5.6 11 7.5 11.8" />
+      <path d="M17 6h2.2c.5 2.7-.8 5-2.7 5.8" />
+      <path d="M12 14v4" />
+      <path d="M9.5 18h5l.6 3H8.9l.6-3z" />
+    </svg>
+  ),
+  boost: (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  ),
+}
+
 // Where the seller buys the optional extras: the Verified badge and Seller Pro. Each purchase
 // asks first and records a demo sale for the admin's ledger. Buyers never see these prices.
 // `blocked` (suspended or terminated account) replaces the buttons with the reason.
@@ -16,13 +41,19 @@ export default function SellerStore({ admin, blocked = '', error = '', ordersSum
   const verifyPrice = STORE_PRICES.verification
   const proPrice = STORE_PRICES.pro
 
+  // A solid medal means earned; an outline is a goal still to win.
+  const tile = (name, earned) => (
+    <span className={`store-icon store-icon-${name}${earned ? ' is-earned' : ''}`} aria-hidden="true">{ICONS[name]}</span>
+  )
+
   return (
     <section className="panel store-panel" aria-labelledby="store-heading">
       <p className="eyebrow">GROW YOUR SALES</p>
       <h2 id="store-heading">Extras for your shop</h2>
 
       <div className="store-row">
-        <div>
+        {tile('verified', verification === 'verified')}
+        <div className="store-copy">
           <h3>Verified seller <span className={`badge badge-${verification === 'verified' ? 'verified' : 'available'}`}>{VERIFICATION_LABELS[verification]}</span></h3>
           <p className="hint">
             {verification === 'verified'
@@ -33,14 +64,17 @@ export default function SellerStore({ admin, blocked = '', error = '', ordersSum
           </p>
         </div>
         {!blocked && verification === 'none' && (
-          <button type="button" onClick={() => setAsking({ kind: 'verify' })}>
-            Get verified<span className="visually-hidden"> for {moneyLabel(verifyPrice.amount, verifyPrice.currency, null)} (demo payment)</span>
-          </button>
+          <div className="store-action">
+            <button type="button" onClick={() => setAsking({ kind: 'verify' })}>
+              Get verified<span className="visually-hidden"> for {moneyLabel(verifyPrice.amount, verifyPrice.currency, null)} (demo payment)</span>
+            </button>
+          </div>
         )}
       </div>
 
       <div className="store-row">
-        <div>
+        {tile('pro', pro)}
+        <div className="store-copy">
           <h3>Seller Pro <span className={`badge ${pro ? 'badge-pro' : 'badge-available'}`}>{pro ? `Active until ${formatDay(proUntil(admin, 'seller'))}` : 'Not active'}</span></h3>
           <p className="hint">
             {pro
@@ -60,18 +94,23 @@ export default function SellerStore({ admin, blocked = '', error = '', ordersSum
           )}
         </div>
         {!blocked && !pro && (
-          <button type="button" onClick={() => setAsking({ kind: 'pro' })}>
-            Go Pro<span className="visually-hidden"> for {moneyLabel(proPrice.amount, proPrice.currency, null)} (demo payment)</span>
-          </button>
+          <div className="store-action">
+            <button type="button" onClick={() => setAsking({ kind: 'pro' })}>
+              Go Pro<span className="visually-hidden"> for {moneyLabel(proPrice.amount, proPrice.currency, null)} (demo payment)</span>
+            </button>
+          </div>
         )}
         {!blocked && pro && (
-          <button type="button" className="secondary" onClick={() => setAsking({ kind: 'end-pro' })}>End plan</button>
+          <div className="store-action">
+            <button type="button" className="secondary" onClick={() => setAsking({ kind: 'end-pro' })}>End plan</button>
+          </div>
         )}
       </div>
 
       <div className="store-row">
-        <div>
-          <h3>Boost a listing</h3>
+        {tile('boost', false)}
+        <div className="store-copy">
+          <h3>Boost a listing <span className="badge badge-boosted">{BOOST_DAYS}-day boost</span></h3>
           <p className="hint">
             {moneyLabel(STORE_PRICES.boost.amount, STORE_PRICES.boost.currency, null)} (demo payment) puts one
             listing at the top of buyer results for {BOOST_DAYS} days, with a Boosted badge. The button is on
