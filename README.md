@@ -108,7 +108,7 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 - `src/storage.js`: safe read and write of everything kept in the browser
 - `src/auth.js`, `AuthPage.jsx`, `authValidation.js`: the sign-in pages, waiting for accounts
 - `supabase/`: the database for real accounts (see below)
-- `docx/`: the project plan and the implementation plans
+- `docx/`: the project plan and the implementation plans (`Accounts and Backend Plan.md`, `Monetisation Plan.md`)
 - `WORKSHOP-CHECKS.md`: the acceptance checks to run by hand
 
 ## What is kept in the browser
