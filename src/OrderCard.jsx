@@ -3,6 +3,8 @@ import { formatDay } from './listing.js'
 import { methodLabel, STATUS_LABELS } from './orders.js'
 
 // One order, as either side sees it. `children` holds the buttons for whoever is looking.
+// Phone numbers never appear here: neither side learns the other's contact details, so the
+// deal cannot be taken off the platform. (The admin page shows them for support.)
 export default function OrderCard({ order, role, display = null, seller = null, children = null }) {
   const money = (value) => moneyLabel(value, order.currency, display)
   const reference = order.id.slice(0, 8).toUpperCase()
@@ -23,10 +25,10 @@ export default function OrderCard({ order, role, display = null, seller = null, 
         <div><dt>Payment</dt><dd>{methodLabel(order.paymentMethod)}{order.paymentMethod === 'cash' ? ' on delivery' : ''}</dd></div>
         <div><dt>Delivery</dt><dd>{order.delivery ? `To ${order.delivery}` : 'Buyer collects'}</dd></div>
         {role === 'seller' && (
-          <div><dt>Buyer</dt><dd>{order.buyer.name} · <a href={`tel:${order.buyer.phone.replace(/[\s\-().]/g, '')}`}>{order.buyer.phone}</a>{order.buyer.location ? ` · ${order.buyer.location}` : ''}</dd></div>
+          <div><dt>Buyer</dt><dd>{order.buyer.name}{order.buyer.location ? ` · ${order.buyer.location}` : ''}</dd></div>
         )}
         {showSeller && (
-          <div><dt>Seller</dt><dd>{seller.businessName}{seller.phone ? <> · <a href={`tel:${seller.phone.replace(/[\s\-().]/g, '')}`}>{seller.phone}</a></> : null}</dd></div>
+          <div><dt>Seller</dt><dd>{seller.businessName}</dd></div>
         )}
         {order.note && <div className="order-wide"><dt>Note</dt><dd>{order.note}</dd></div>}
       </dl>
