@@ -8,6 +8,7 @@ import PriceCalculator from './PriceCalculator.jsx'
 import SaveButton from './SaveButton.jsx'
 import SavedList from './SavedList.jsx'
 import SellerContact from './SellerContact.jsx'
+import SiteHeader from './SiteHeader.jsx'
 import {
   emptyBuyerFilters, isBuyerFiltering, isListedForBuyers, matchesBuyerFilters, PRICE_SORT_OPTIONS, SORT_OPTIONS,
   sortRecords,
@@ -118,12 +119,12 @@ export default function BuyerPage() {
 
   return (
     <main className="shell role-buyer">
-      <a className="back-link" href="#/">← Switch role</a>
-      <header className="hero">
+      <SiteHeader role="buyer" />
+      <div className="hero">
         <p className="eyebrow">FOR BUYERS</p>
         <h1>Find livestock</h1>
-        <p className="intro">Browse animals that sellers have listed for bulk sale. Search by breed, animal or place, filter by price and what is offered, and open a listing to see the full details.</p>
-      </header>
+        <p className="intro">Search animals for sale by breed, place or price, then call or WhatsApp the seller.</p>
+      </div>
 
       <BuyerProfile profile={profile} onSave={saveProfile} openRequest={profileRequests} />
 

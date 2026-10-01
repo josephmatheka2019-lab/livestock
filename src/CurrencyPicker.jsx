@@ -15,8 +15,8 @@ export default function CurrencyPicker({ value, onChange, status, date, stale })
   const moreValue = QUICK.includes(value) ? '' : value
 
   return (
-    <section className="panel currency-picker" aria-labelledby="currency-heading">
-      <h2 id="currency-heading">Show prices in</h2>
+    <section className="bar currency-bar" aria-labelledby="currency-heading">
+      <h2 id="currency-heading" className="bar-label">Show prices in</h2>
       <div className="chip-row" role="group" aria-labelledby="currency-heading">
         <button type="button" className={`chip${value === '' ? ' chip-on' : ''}`} aria-pressed={value === ''}
           onClick={() => onChange('')}>Seller's currency</button>
@@ -32,7 +32,6 @@ export default function CurrencyPicker({ value, onChange, status, date, stale })
         </select>
       </div>
       <p className="hint currency-note" role="status">
-        {value === '' && 'Prices are shown in the currency each seller chose.'}
         {value !== '' && status === 'loading' && 'Loading today’s exchange rates…'}
         {value !== '' && status === 'error' && 'Could not load exchange rates, so prices are shown in the sellers’ own currencies. Check your connection and try again.'}
         {value !== '' && status === 'ready' && (

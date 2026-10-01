@@ -24,7 +24,7 @@ export default function ListingForm({ form, profile, errors, isEditing, onChange
   }
 
   return (
-    <section className="panel" aria-labelledby="form-heading">
+    <section className="panel form-panel" aria-labelledby="form-heading">
       <h2 id="form-heading">{isEditing ? 'Edit listing' : 'Add a listing'}</h2>
       <form onSubmit={onSubmit} noValidate>
         <label htmlFor="listing-animal-type">Animal type <span aria-hidden="true">*</span></label>
@@ -163,7 +163,7 @@ export default function ListingForm({ form, profile, errors, isEditing, onChange
 
         <div className="actions">
           <button type="submit">{isEditing ? 'Save changes' : 'Add listing'}</button>
-          {isEditing && <button type="button" className="secondary" onClick={onCancel}>Cancel</button>}
+          <button type="button" className="secondary" onClick={onCancel}>Cancel</button>
         </div>
       </form>
     </section>

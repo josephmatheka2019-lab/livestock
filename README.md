@@ -59,6 +59,18 @@ To build and preview a production version:
 
 Any other address shows the first screen.
 
+## Design, and the previous version
+
+The look was refreshed to make the pages shorter and warmer: a header with a logo on every page, a landing page
+with a picture, one-line bars for the profile and the currency choice, listing cards that lead with the photo and
+the price, a listing form that opens on request, and a warmer palette. The type is Figtree, served from the
+app itself so nothing is fetched from outside.
+
+The design from before the refresh is kept so the two can be compared. With the app running, open `/previous/`
+(for example http://localhost:5173/previous/). It is a built copy of git tag `design-v1`, lives in
+`public/previous`, and reads the same browser data as the new design, so both show the same listings. When you no
+longer need it, delete `public/previous` and the small `previousDesign` plugin in `vite.config.js`.
+
 ## Important limits (read before relying on it)
 
 - **Everything is stored in one browser.** Listings, profiles, saved listings and choices are kept in the
@@ -78,7 +90,7 @@ Any other address shows the first screen.
 ## Project map
 
 - `src/App.jsx`, `src/router.js`: which page to show for an address
-- `src/Landing.jsx`: the seller or buyer choice
+- `src/Landing.jsx`, `HeroArt.jsx`, `SiteHeader.jsx`: the seller or buyer choice, its picture, and the header shared by every page
 - `src/SellerPage.jsx` and `SellerProfile`, `ListingForm`, `ListingPreview`, `SellerSummary`, `ConfirmDelete`: the seller side
 - `src/BuyerPage.jsx` and `BuyerProfile`, `BuyerFilters`, `CurrencyPicker`, `PriceCalculator`, `SellerContact`, `SavedList`, `SaveButton`: the buyer side
 - `src/ListingList.jsx`, `ListingSummary.jsx`, `ListingDetails.jsx`: shared by both sides (`ListingFilters.jsx` is the seller's filter bar)

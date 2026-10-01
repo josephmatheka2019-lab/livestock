@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { authConfigured, signIn, signUp } from './auth.js'
+import SiteHeader from './SiteHeader.jsx'
 import { MIN_PASSWORD, validateCredentials } from './authValidation.js'
 
 const COPY = {
@@ -78,13 +79,13 @@ export default function AuthPage({ role }) {
 
   return (
     <main className={`shell auth role-${role}`}>
-      <a className="back-link" href="#/">← Choose seller or buyer</a>
+      <SiteHeader role={role} />
 
-      <header className="hero">
+      <div className="hero">
         <p className="eyebrow">{role.toUpperCase()} ACCOUNT</p>
         <h1 ref={heading} tabIndex={-1}>{isSignup ? `Create a ${copy.name} account` : `Log in as a ${copy.name}`}</h1>
         <p className="intro">{isSignup ? copy.signupHint : copy.signinIntro}</p>
-      </header>
+      </div>
 
       {!authConfigured && (
         <p className="notice" role="status">

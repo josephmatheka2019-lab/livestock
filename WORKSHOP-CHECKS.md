@@ -10,24 +10,27 @@ Two things to know first:
 
 ## A. The five acceptance criteria from the project plan
 
-1. - [ ] **Create.** As a seller with a completed profile, fill in the listing form (animal, quantity,
-   currency, price, location, at least one payment method) and choose **Add listing**. The listing appears
-   at the top of the list straight away.
+1. - [ ] **Create.** As a seller with a completed profile, choose **+ Add a listing**, fill in the form (animal,
+   quantity, currency, price, location, at least one payment method) and choose **Add listing**. The form
+   closes and the listing appears at the top of the list straight away.
 2. - [ ] **View.** Choose **View** on a listing. Every detail is shown: animal, breed, age, weight, quantity,
    price, total, bulk price, currency, payment, location, availability and date listed.
 3. - [ ] **Edit.** Choose **Edit**, change something, choose **Save changes**. The list and the details show
    the new value.
 4. - [ ] **Delete.** Choose **Delete**, then **Yes, delete**. The listing is gone from the list and, on the
    buyer page, from the results.
-5. - [ ] **Keep and filter.** Refresh the page. The listings are still there. On the seller page, filtering
-   by animal type or place narrows the list; **Clear filters** restores it.
+5. - [ ] **Keep and filter.** Refresh the page. The listings are still there. On the seller page, open
+   **Filter listings** and filter by animal type or place; the list narrows and **Clear filters** restores it.
 
-## B. First screen
+## B. First screen and header
 
-- [ ] Opening the app shows two choices: **I am a seller** and **I am a buyer**.
+- [ ] Opening the app shows the logo, a headline, a countryside picture and two choices: **I am a seller**
+  and **I am a buyer**.
+- [ ] The seller, buyer and sign-in pages share a header with the logo; on the seller and buyer pages it also
+  shows which side you are on and a **Switch role** link.
 - [ ] **Continue as a seller** opens the seller page and **Continue as a buyer** opens the buyer page,
   with no sign-in.
-- [ ] **← Switch role** on either page returns to the first screen.
+- [ ] **Switch role** (or the logo) on either page returns to the first screen.
 - [ ] A made-up address such as `#/nonsense` shows the first screen.
 
 ## C. Seller
@@ -37,11 +40,14 @@ Two things to know first:
   form, a message asking you to finish the profile first.
 - [ ] **Save profile** with nothing entered shows errors for name and phone and puts the cursor in the first.
 - [ ] A phone number like `abc` or `12345` is rejected; `+254 712 345 678` and `0712 345 678` are accepted.
-- [ ] After saving, a summary card with **Profile complete** appears and the listing form unlocks.
+- [ ] After saving, the profile shrinks to a one-line bar (business name, phone, place) and the
+  **+ Add a listing** button appears.
 - [ ] **Edit profile** opens the form filled in; **Cancel** keeps the old details.
 
 ### Listing form
-- [ ] Submitting an empty form shows an error under each required field and moves the cursor to the first one.
+- [ ] The page opens on the listings, with no form showing. **+ Add a listing** opens the form and puts the
+  cursor in the first field; **Cancel** closes it without saving; saving closes it and moves focus to the list.
+- [ ] Submitting an empty form (the form stays open) shows an error under each required field and moves the cursor to the first one.
 - [ ] Quantity `0` and `2.5` are rejected; a price with more than three decimals is rejected; a bulk price,
   if given, must be a valid amount.
 - [ ] Choosing **Other** as the animal shows a required **Which animal?** box.
@@ -54,16 +60,17 @@ Two things to know first:
 
 ### Managing listings
 - [ ] With no listings, the list area says **No livestock listings available yet.** and **Add Your First
-  Listing** moves the cursor to the form.
+  Listing** opens the form with the cursor in the first field.
 - [ ] **Delete** asks "Delete this listing?". **No, keep it** and the Escape key keep the listing;
   **Yes, delete** removes it.
 - [ ] **Mark as sold** shows a **Sold** badge and "Sold on <date>"; **Mark available** clears it.
   The date also appears as **Date sold** in the details.
 - [ ] **Pause** shows a **Paused** badge and the button becomes **Resume**; a sold listing has no Pause button.
   Marking a paused listing sold ends the pause.
-- [ ] The **At a glance** card shows the right counts (Available, Paused when any, Sold) and the value of
-  stock per currency; paused stock is left out of the value of what is for sale.
-- [ ] The Availability filter has **All, Available, Sold, Paused** and each shows the right listings.
+- [ ] The summary row above the list shows the right counts (Available, Paused when any, Sold) and the value
+  of stock per currency; paused stock is left out of the value of what is for sale.
+- [ ] **Filter listings** opens the filters; its Availability box has **All, Available, Sold, Paused** and each
+  shows the right listings. Closing the panel with a filter on shows "Filter listings (on)".
 - [ ] **Sort by** offers Newest, Animal type A–Z and Z–A, and **Recently sold**.
 
 ## D. Buyer

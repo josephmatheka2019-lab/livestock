@@ -73,22 +73,13 @@ export default function SellerProfile({ profile, onSave }) {
 
   if (!showForm) {
     return (
-      <section className="panel profile" aria-labelledby="profile-heading">
-        <div className="profile-head">
-          <div>
-            <p className="eyebrow">YOUR SELLER PROFILE</p>
-            <h2 id="profile-heading">{profile.businessName}</h2>
-          </div>
-          <span className="badge badge-available">Profile complete</span>
-        </div>
-        <dl className="detail-grid">
-          <div><dt>Phone</dt><dd>{profile.phone}</dd></div>
-          <div><dt>Location</dt><dd>{profile.location || 'Not given'}</dd></div>
-        </dl>
-        {profile.about && <p className="detail-description">{profile.about}</p>}
-        <div className="actions">
+      <section className="bar profile-bar" aria-labelledby="profile-heading">
+        <h2 id="profile-heading" className="bar-title" tabIndex={-1}>{profile.businessName}</h2>
+        <p className="bar-text">{profile.phone}{profile.location ? ` · ${profile.location}` : ''}</p>
+        <div className="bar-end">
           <button type="button" className="secondary" ref={editButton} onClick={startEditing}>Edit profile</button>
         </div>
+        {profile.about && <p className="bar-text bar-about">{profile.about}</p>}
       </section>
     )
   }

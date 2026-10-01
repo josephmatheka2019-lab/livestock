@@ -5,13 +5,13 @@ import { animalLabel, SORT_OPTIONS } from './listing.js'
 
 export default function ListingList({
   records, totalCount, filters, isFiltering, onFilterChange, onClearFilters, sort, onSortChange, sortOptions = SORT_OPTIONS,
-  onAddFirst, onView, onEdit, onToggleStatus, onTogglePaused, onDelete, readOnly = false, display = null, filtersNode = null, seller = null, savedIds = null, onToggleSaved = null,
+  onAddFirst, onView, onEdit, onToggleStatus, onTogglePaused, onDelete, readOnly = false, display = null, filtersNode = null, seller = null, savedIds = null, onToggleSaved = null, headerAction = null,
 }) {
   return (
     <section className="records" aria-labelledby="records-heading">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">{readOnly ? 'AVAILABLE NOW' : 'YOUR LOCAL DATA'}</p>
+          <p className="eyebrow">{readOnly ? 'AVAILABLE NOW' : 'MANAGE'}</p>
           <h2 id="records-heading" tabIndex={-1}>
             {readOnly ? 'Livestock for sale' : 'Listings'}{' '}
             <span className="count" aria-live="polite">
@@ -19,14 +19,17 @@ export default function ListingList({
             </span>
           </h2>
         </div>
-        {totalCount > 1 && (
-          <div className="sort">
-            <label htmlFor="sort-order">Sort by</label>
-            <select id="sort-order" value={sort} onChange={onSortChange}>
-              {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
-          </div>
-        )}
+        <div className="section-tools">
+          {totalCount > 1 && (
+            <div className="sort">
+              <label htmlFor="sort-order">Sort by</label>
+              <select id="sort-order" value={sort} onChange={onSortChange}>
+                {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </div>
+          )}
+          {headerAction}
+        </div>
       </div>
       {totalCount > 0 && (filtersNode ?? (
         <ListingFilters filters={filters} onChange={onFilterChange} onClear={onClearFilters} isFiltering={isFiltering} showStatus={!readOnly} />

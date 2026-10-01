@@ -11,6 +11,7 @@ import ListingDetails from './ListingDetails.jsx'
 import ListingList from './ListingList.jsx'
 import SellerProfile from './SellerProfile.jsx'
 import SellerSummary from './SellerSummary.jsx'
+import SiteHeader from './SiteHeader.jsx'
 import { emptyProfile, isProfileComplete } from './sellerProfile.js'
 
 const emptyFilters = { animalType: '', location: '', status: '' }
@@ -63,10 +64,33 @@ export default function SellerPage() {
   const deleteTrigger = useRef(null)
   const [storageWarning, setStorageWarning] = useState(false)
   const profileComplete = isProfileComplete(profile)
+  // The listing form is opened on request, so the page opens on the seller's listings.
+  const [formOpen, setFormOpen] = useState(false)
+  const [focusRequest, setFocusRequest] = useState(0)
 
   useEffect(() => {
     setStorageWarning(!writeRecords(records))
   }, [records])
+
+  useEffect(() => {
+    document.title = 'Your listings – Local Livestock Marketplace'
+  }, [])
+
+  // The form only exists once open, so move into it after it has appeared.
+  useEffect(() => {
+    if (focusRequest > 0 && formOpen) document.getElementById('listing-animal-type')?.focus()
+  }, [focusRequest, formOpen])
+
+  function openForm() {
+    setFormOpen(true)
+    setFocusRequest((count) => count + 1)
+  }
+
+  // After saving, the form closes and focus goes to the list, where the change shows.
+  function closeFormToList() {
+    setFormOpen(false)
+    setTimeout(() => document.getElementById('records-heading')?.focus(), 0)
+  }
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target
@@ -146,6 +170,7 @@ export default function SellerPage() {
     announce(editingId ? 'Listing updated.' : 'Listing added.')
     setForm(blankForm(profile))
     setErrors({})
+    closeFormToList()
   }
 
   function saveProfile(next) {
@@ -191,13 +216,14 @@ export default function SellerPage() {
       photo: record.photo ?? '',
     })
     setErrors({})
-    document.getElementById('listing-animal-type')?.focus()
+    openForm()
   }
 
   function cancelEdit() {
     setEditingId(null)
     setForm(blankForm(profile))
     setErrors({})
+    setFormOpen(false)
   }
 
   function toggleStatus(id) {
@@ -234,7 +260,7 @@ export default function SellerPage() {
       focusProfile()
       return
     }
-    document.getElementById('listing-animal-type')?.focus()
+    openForm()
   }
 
   function requestDelete(id) {
@@ -268,32 +294,33 @@ export default function SellerPage() {
   const pendingDeleteRecord = records.find((record) => record.id === pendingDeleteId)
 
   return (
-    <main className="shell">
-      <a className="back-link" href="#/">← Switch role</a>
-      <header className="hero">
-        <p className="eyebrow">FOR SMALL-SCALE FARMERS</p>
-        <h1>Local Livestock Marketplace</h1>
-        <p className="intro">Keep track of the animals you have available for bulk sale: add listings, update them and remove them once they are gone.</p>
-      </header>
+    <main className="shell role-seller">
+      <SiteHeader role="seller" />
+      <div className="hero">
+        <p className="eyebrow">FOR SELLERS</p>
+        <h1>Your livestock listings</h1>
+        <p className="intro">Add animals for sale, keep them up to date, and mark them sold.</p>
+      </div>
 
       <SellerProfile profile={profile} onSave={saveProfile} />
 
       <SellerSummary records={records} />
 
-      {profileComplete ? (
-      <ListingForm
-        form={form}
-        profile={profile}
-        errors={errors}
-        isEditing={Boolean(editingId)}
-        onChange={handleChange}
-        onTogglePayment={togglePayment}
-        onPhotoChange={handlePhotoChange}
-        onPhotoRemove={removePhoto}
-        onSubmit={handleSubmit}
-        onCancel={cancelEdit}
-      />
-      ) : (
+      {profileComplete && formOpen && (
+        <ListingForm
+          form={form}
+          profile={profile}
+          errors={errors}
+          isEditing={Boolean(editingId)}
+          onChange={handleChange}
+          onTogglePayment={togglePayment}
+          onPhotoChange={handlePhotoChange}
+          onPhotoRemove={removePhoto}
+          onSubmit={handleSubmit}
+          onCancel={cancelEdit}
+        />
+      )}
+      {!profileComplete && (
         <section className="panel locked" aria-labelledby="locked-heading">
           <h2 id="locked-heading">Add a listing</h2>
           <p>Finish your seller profile above to start posting. Buyers need your business name and phone number to reach you.</p>
@@ -329,6 +356,7 @@ export default function SellerPage() {
         onFilterChange={handleFilterChange}
         onClearFilters={() => setFilters(emptyFilters)}
         onAddFirst={focusForm}
+        headerAction={profileComplete && !formOpen ? <button type="button" className="add-listing" onClick={openForm}>+ Add a listing</button> : null}
         onView={setSelectedId}
         onEdit={startEdit}
         onToggleStatus={toggleStatus}

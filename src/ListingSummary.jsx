@@ -18,7 +18,7 @@ export default function ListingSummary({ record, showStatus = false, display = n
   const isNew = buyerView && isNewListing(record)
   const saving = buyerView ? bulkSaving(record) : 0
   const sellerName = buyerView ? seller?.businessName?.trim() : ''
-  const withOriginal = (parts, suffix) => `${parts.text} ${suffix}${parts.original ? ` (${parts.original})` : ''}`
+  const original = (parts) => (parts.original ? ` (${parts.original})` : '')
 
   return (
     <div className="record-main">
@@ -35,15 +35,19 @@ export default function ListingSummary({ record, showStatus = false, display = n
           </p>
         )}
         {showStatus && isSold && record.soldAt && <p className="sold-date">Sold on {formatDay(record.soldAt)}</p>}
+        {record.price && (
+          <p className="listing-price">
+            {price.text} <small>each{original(price)}</small>
+          </p>
+        )}
+        {record.bulkPrice && <p className="listing-bulk">Bulk deal: {bulk.text} for all{original(bulk)}</p>}
+        {saving > 0 && <p className="saving-line">Save {moneyLabel(saving, record.currency, display)} on the whole lot</p>}
         <p className="listing-meta">
           {[
             record.quantity && `Quantity: ${record.quantity}`,
-            record.price && withOriginal(price, 'each'),
-            record.bulkPrice && `Bulk deal: ${withOriginal(bulk, 'for all')}`,
             record.location && `Location: ${record.location}`,
           ].filter(Boolean).join(' · ')}
         </p>
-        {saving > 0 && <p className="saving-line">Save {moneyLabel(saving, record.currency, display)} on the whole lot</p>}
         {facts.length > 0 && <p className="listing-facts">{facts.join(' · ')}</p>}
         {tags.length > 0 && (
           <ul className="tags" aria-label="Terms">

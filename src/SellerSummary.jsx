@@ -19,8 +19,7 @@ export default function SellerSummary({ records }) {
 
   return (
     <section className="panel summary" aria-labelledby="summary-heading">
-      <p className="eyebrow">AT A GLANCE</p>
-      <h2 id="summary-heading">Your listings</h2>
+      <h2 id="summary-heading" className="visually-hidden">Your listings at a glance</h2>
       <dl className="stat-grid">
         <div className="stat"><dt>Available</dt><dd className="stat-number">{summary.available}</dd></div>
         {summary.paused > 0 && (

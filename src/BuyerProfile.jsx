@@ -120,13 +120,10 @@ export default function BuyerProfile({ profile, onSave, openRequest = 0 }) {
 
   if (!complete) {
     return (
-      <section className="panel profile" aria-labelledby="buyer-profile-heading">
-        <p className="eyebrow">YOUR DETAILS</p>
-        <h2 id="buyer-profile-heading">Add your details to contact sellers</h2>
-        <p className="profile-note">
-          You can browse without them. A name and phone number are needed when you want to reach a seller.
-        </p>
-        <div className="actions">
+      <section className="bar bar-prompt" aria-labelledby="buyer-profile-heading">
+        <h2 id="buyer-profile-heading" className="bar-title">Add your details to contact sellers</h2>
+        <p className="bar-text">You can browse without them.</p>
+        <div className="bar-end">
           <button type="button" ref={opener} onClick={open}>Add my details</button>
         </div>
         {status}
@@ -135,19 +132,10 @@ export default function BuyerProfile({ profile, onSave, openRequest = 0 }) {
   }
 
   return (
-    <section className="panel profile" aria-labelledby="buyer-profile-heading">
-      <div className="profile-head">
-        <div>
-          <p className="eyebrow">YOUR DETAILS</p>
-          <h2 id="buyer-profile-heading">{profile.name}</h2>
-        </div>
-        <span className="badge badge-available">Ready to contact sellers</span>
-      </div>
-      <dl className="detail-grid">
-        <div><dt>Phone</dt><dd>{profile.phone}</dd></div>
-        <div><dt>Location</dt><dd>{profile.location || 'Not given'}</dd></div>
-      </dl>
-      <div className="actions">
+    <section className="bar profile-bar" aria-labelledby="buyer-profile-heading">
+      <h2 id="buyer-profile-heading" className="bar-title">{profile.name}</h2>
+      <p className="bar-text">{profile.phone}{profile.location ? ` · ${profile.location}` : ''}</p>
+      <div className="bar-end">
         <button type="button" className="secondary" ref={opener} onClick={open}>Edit my details</button>
       </div>
       {status}
