@@ -14,6 +14,7 @@ import {
 } from './store.js'
 import { animalLabel, formatDay } from './listing.js'
 import { sortOrders } from './orders.js'
+import { callHref, whatsappHref } from './contactLinks.js'
 import {
   clearAdminSession, readAdmin, readAdminSession, readBuyerProfile, readOrders, readProfile, readRecords,
   writeAdmin, writeAdminSession, writeRecords,
@@ -249,6 +250,8 @@ function AdminDashboard({ session, onSignOut }) {
           {accounts.map((account) => {
             const status = accountStatus(admin, account.id)
             const badge = status === 'active' ? 'status-completed' : status === 'suspended' ? 'status-placed' : 'status-cancelled'
+            const call = callHref(account.contact)
+            const whatsapp = whatsappHref(account.contact)
             return (
               <li className="order-card" key={account.id}>
                 <div className="order-head">
@@ -256,6 +259,20 @@ function AdminDashboard({ session, onSignOut }) {
                   <span className={`badge order-status ${badge}`}>{ACCOUNT_STATUS_LABELS[status]}</span>
                 </div>
                 <p className="order-ref">{account.who}{account.contact ? ` · ${account.contact}` : ''}</p>
+                {(call || whatsapp) && (
+                  <div className="contact-actions">
+                    {call && (
+                      <a className="contact-action" href={call}>
+                        Call<span className="visually-hidden"> the {account.label.toLowerCase()}</span>
+                      </a>
+                    )}
+                    {whatsapp && (
+                      <a className="contact-action contact-action-whatsapp" href={whatsapp} target="_blank" rel="noreferrer">
+                        WhatsApp<span className="visually-hidden"> the {account.label.toLowerCase()}</span>
+                      </a>
+                    )}
+                  </div>
+                )}
                 {status === 'suspended' && <p className="order-wait">Suspended: cannot place, post or accept orders until reinstated.</p>}
                 {status === 'terminated' && <p className="order-wait">Terminated: locked out for good. Only a new account can trade.</p>}
 

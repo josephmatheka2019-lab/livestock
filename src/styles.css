@@ -522,3 +522,22 @@ html:has(.role-admin), body:has(.role-admin) { background: var(--admin-bg); }
 .admin-fee { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0 0 10px; }
 .admin-fee dt { color: var(--muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 .admin-fee dd { margin: 2px 0 0; font-weight: 700; overflow-wrap: anywhere; }
+
+/* contact shortcuts on the account cards: dial the trader or open a WhatsApp chat.
+   Anchors wearing the tool-button look, so they sit beside the other card actions. */
+.contact-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.contact-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: var(--role, #007c78);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.contact-action:hover { filter: brightness(.93); }
+.contact-action-whatsapp { background: #25d366; color: #07321c; }
+.contact-action-whatsapp:hover { filter: brightness(.95); }

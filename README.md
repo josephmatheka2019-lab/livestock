@@ -45,6 +45,8 @@ has its own page.
 - See every transaction with the platform fee on it, the totals completed, and what is held in escrow.
 - Hold a payment (escrow) so the seller cannot complete the order until it is released.
 - Suspend or terminate the seller or buyer account; reinstate a suspended one. Every action asks first.
+- Reach the seller or the buyer from their account card: **Call** dials the saved phone number and
+  **WhatsApp** opens a chat with them. Both appear only when that account has a number saved.
 - Approve or reject **verification** requests, end a **Pro** plan, remove a **boost**, and see the
   **store revenue** (verification, boosts and Pro) as a ledger of sales.
 
@@ -156,7 +158,7 @@ longer need it, delete `public/previous` and the small `previousDesign` plugin i
 
 `supabase/` holds the database definition for separate seller and buyer accounts on different devices,
 with the access rules enforced by the database (a buyer cannot change a listing, a seller can only change
-their own, and so on). `supabase/tests/rls.test.sql` checks 45 of those rules against a throwaway local
+their own, and so on). `supabase/tests/rls.test.sql` checks 129 of those rules against a throwaway local
 PostgreSQL. To switch accounts on, follow `supabase/README.md`, then connect the app. Keep secret keys out
 of the repository: `.env.local` is ignored by git, and only the public key and project address belong in
 the app. The plan is in `docx/Accounts and Backend Plan.md`.

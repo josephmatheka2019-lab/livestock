@@ -213,6 +213,9 @@ Two things to know first:
 - [ ] An active Pro plan shows its end date with an **End Pro plan** button that removes the badge.
 - [ ] **Boosted listings** lists every live boost with its expiry and a **Remove boost** button (asks
   first); removing it drops the listing back to its normal place in buyer results.
+- [ ] Each account card shows the trader's phone number with a **Call** and a **WhatsApp** button:
+  **Call** dials the number, **WhatsApp** opens a chat with them in a new tab, and a profile with no
+  saved number shows neither. (The seller and buyer pages still never show a phone number.)
 - [ ] Every admin action is confirmed first (**No, go back** and Escape change nothing), and the
   changes survive a refresh.
 
