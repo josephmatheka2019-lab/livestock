@@ -32,7 +32,7 @@ becomes a buyer, the least-privileged type.
 
 ### Phase A: setup
 1. **Database and rules.** DONE (needs your Supabase project to go live). See `supabase/schema.sql`.
-   Tested locally: 45 permission checks pass, 0 fail (`supabase/tests/rls.test.sql`).
+   Tested locally: 129 permission checks pass, 0 fail (`supabase/tests/rls.test.sql`).
 2. **Connect the app.** Add the Supabase connection; keys live in a git-ignored `.env.local`.
 3. **Put the app online.** Deploy to a free host so it opens on any device.
 

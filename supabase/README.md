@@ -15,6 +15,8 @@ shared database and photo storage. This folder holds the database definition.
    - **anon public** key (a long text starting `eyJ...`)
 4. In the project folder, copy `.env.example` to `.env.local` and paste the two values in.
    `.env.local` is ignored by git, so it is never uploaded.
+5. After you create your first account, make it the administrator by running the
+   one-line `update` shown at the very end of [schema.sql](schema.sql).
 
 ## Keys: what is safe to share
 
@@ -32,7 +34,13 @@ While testing you may turn it off so test accounts work immediately.
 
 ## Testing the rules locally (optional)
 
-`tests/rls.test.sql` checks 45 permission rules (for example "a buyer cannot edit a listing"
-and "a seller cannot edit another seller's listing") against a throwaway local PostgreSQL
-database, using `tests/local-shim.sql` to stand in for Supabase's login system. Never run
-`local-shim.sql` in Supabase. The same rules are re-checked against real accounts in slice 15.
+`tests/rls.test.sql` checks 129 permission rules (for example "a buyer cannot edit a
+listing", "a seller cannot mark themselves verified", "settings are private even from an
+administrator" and "a visitor cannot read orders") against a throwaway local PostgreSQL
+database, using `tests/local-shim.sql` to stand in for Supabase's login system. From this
+folder, with any empty local database:
+
+    psql -d <throwaway db> -f tests/local-shim.sql -f schema.sql -f tests/rls.test.sql
+
+Every line should print PASS. Never run `local-shim.sql` in Supabase. The same rules are
+re-checked against real accounts in slice 15.

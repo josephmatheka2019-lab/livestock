@@ -152,3 +152,214 @@ select public.expect_error('visitor cannot read listings', 'select count(*) from
 select public.expect_error('visitor cannot read profiles', 'select count(*) from public.profiles');
 select public.expect_error('visitor cannot post', $q$insert into public.listings (animal_type, quantity, price, location, payment_methods) values ('Goats', 3, 120, 'Nakuru', '{mpesa}')$q$);
 reset role;
+
+-- Orders, moderation, store and photos ----------------------------------------
+-- Fixtures (as the database owner): three orders across two sellers, a paused
+-- listing, one administrator, two account records, one ledger entry and one photo.
+select id as l_goats  from public.listings where animal_type = 'Goats'  and price = 100 \gset
+select id as l_sheep  from public.listings where animal_type = 'Sheep'  \gset
+select id as l_cattle from public.listings where animal_type = 'Cattle' \gset
+
+insert into public.orders (id, listing_id, buyer_id, listing_label, listing_location, buyer_name, buyer_phone, quantity, unit_price, total, payment_method, mpesa_channel, status) values
+  ('00000000-0000-0000-0000-0000000000f1', :'l_goats',  :'b1', 'Goats',  'Nakuru', 'Buyer One',   '0711111111', 2, 100, 200, 'mpesa', 'till', 'placed'),
+  ('00000000-0000-0000-0000-0000000000f2', :'l_cattle', :'b3', 'Cattle', 'Nakuru', 'Buyer Three', '0733333333', 1, 130, 130, 'cash',  '',    'completed'),
+  ('00000000-0000-0000-0000-0000000000f3', :'l_sheep',  :'b3', 'Sheep',  'Kisumu', 'Buyer Three', '0733333333', 3,  50, 150, 'cash',  '',    'placed');
+
+update public.listings set paused = true where animal_type = 'Goats' and price = 100;
+update public.profiles set is_admin = true where id = :'x2';
+
+insert into public.account_moderation (account_id, status, verification, pro_until) values
+  (:'s4', 'active',    'verified', now() + interval '30 days'),
+  (:'b3', 'suspended', 'none',     null);
+
+insert into public.store_sales (account_id, kind, label, amount, currency, at)
+  values (:'s2', 'boost', 'Boosted listing', 250, 'KES', now() - interval '1 day');
+
+insert into storage.objects (bucket_id, name)
+  values ('listing-photos', :'l_sheep' || '/main.jpg');
+
+select '--- orders (seller side)' as section;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'s1', false);
+select public.expect_count('seller sees the orders on their own listings (2)', 'select count(*) from public.orders', 2);
+select public.expect_count('seller cannot see an order on someone else''s listing', $q$select count(*) from public.orders where id = '00000000-0000-0000-0000-0000000000f3'$q$, 0);
+select public.expect_count('seller reads the history of their orders (2 events)', 'select count(*) from public.order_events', 2);
+select public.expect_rows('seller can accept an order', $q$update public.orders set status = 'accepted', stock_held = true where id = '00000000-0000-0000-0000-0000000000f1'$q$, 1);
+select public.expect_count('the acceptance is written into the history (3 events)', 'select count(*) from public.order_events', 3);
+select public.expect_error('seller cannot change an order''s money', $q$update public.orders set total = 1 where id = '00000000-0000-0000-0000-0000000000f1'$q$);
+select public.expect_error('seller cannot rewrite the buyer''s details', $q$update public.orders set buyer_name = 'Me' where id = '00000000-0000-0000-0000-0000000000f1'$q$);
+select public.expect_error('seller cannot delete an order', $q$delete from public.orders where id = '00000000-0000-0000-0000-0000000000f1'$q$);
+select public.expect_error('a seller cannot place an order', $q$insert into public.orders (listing_id, quantity, unit_price, total, payment_method) select id, 1, price, price, 'cash' from public.listings where status = 'available' limit 1$q$);
+reset role;
+
+-- Orders: buyer side ------------------------------------------------------------------
+select '--- orders (buyer side)' as section;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'b1', false);
+select public.expect_count('a paused listing drops out of browsing (2)', 'select count(*) from public.listings', 2);
+select public.expect_count('buyer sees only their own order (1)', 'select count(*) from public.orders', 1);
+select public.expect_count('buyer reads their order''s history (2 events)', 'select count(*) from public.order_events', 2);
+select public.expect_count('buyer cannot see another buyer''s order', $q$select count(*) from public.orders where id = '00000000-0000-0000-0000-0000000000f2'$q$, 0);
+select public.expect_count('buyer cannot see an order they are not party to', $q$select count(*) from public.orders where id = '00000000-0000-0000-0000-0000000000f3'$q$, 0);
+select public.expect_rows('buyer can pay their order', $q$update public.orders set status = 'paid' where id = '00000000-0000-0000-0000-0000000000f1'$q$, 1);
+select public.expect_count('the payment is written into the history (3 events)', 'select count(*) from public.order_events', 3);
+select public.expect_error('buyer cannot change an order''s money', $q$update public.orders set total = 1 where id = '00000000-0000-0000-0000-0000000000f1'$q$);
+select public.expect_error('buyer cannot delete an order', $q$delete from public.orders where id = '00000000-0000-0000-0000-0000000000f1'$q$);
+select public.expect_error('buyer cannot place an order in someone else''s name', format($q$insert into public.orders (listing_id, buyer_id, quantity, unit_price, total, payment_method) select id, %L, 1, price, price, 'cash' from public.listings limit 1$q$, :'b3'));
+select public.expect_error('buyer cannot order a paused listing', format($q$insert into public.orders (listing_id, quantity, unit_price, total, payment_method) values (%L, 1, 100, 100, 'cash')$q$, :'l_goats'));
+select public.expect_error('buyer cannot order a sold listing', format($q$insert into public.orders (listing_id, quantity, unit_price, total, payment_method) values (%L, 1, 130, 130, 'cash')$q$, :'l_cattle'));
+select public.expect_error('buyer cannot fake order history', $q$insert into public.order_events (order_id, status) values ('00000000-0000-0000-0000-0000000000f2', 'completed')$q$);
+reset role;
+
+select '--- orders (other buyers and the administrator)' as section;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'b3', false);
+select public.expect_count('another buyer sees their own orders only (2)', 'select count(*) from public.orders', 2);
+select public.expect_count('they cannot see b1''s order', $q$select count(*) from public.orders where id = '00000000-0000-0000-0000-0000000000f1'$q$, 0);
+select public.expect_rows('a buyer can cancel their own order', $q$update public.orders set status = 'cancelled' where id = '00000000-0000-0000-0000-0000000000f3'$q$, 1);
+select public.expect_count('the cancellation reaches the history (2 events)', $q$select count(*) from public.order_events where order_id = '00000000-0000-0000-0000-0000000000f3'$q$, 2);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'b2', false);
+select public.expect_count('an unfinished buyer profile sees no orders', 'select count(*) from public.orders', 0);
+select public.expect_error('an unfinished buyer profile cannot order', format($q$insert into public.orders (listing_id, quantity, unit_price, total, payment_method) values (%L, 1, 50, 50, 'cash')$q$, :'l_sheep'));
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'x2', false);
+select public.expect_count('the administrator reads every order (3)', 'select count(*) from public.orders', 3);
+select public.expect_count('the administrator reads the whole history (6 events)', 'select count(*) from public.order_events', 6);
+reset role;
+
+-- Account moderation -------------------------------------------------------------
+select '--- account moderation' as section;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'s1', false);
+select public.expect_count('a seller starts with no account record', format('select count(*) from public.account_moderation where account_id = %L', :'s1'), 0);
+select public.request_verification();
+select public.expect_count('the request records a pending verification', format($q$select count(*) from public.account_moderation where account_id = %L and verification = 'pending'$q$, :'s1'), 1);
+select public.expect_rows('a seller cannot mark themselves verified', $q$update public.account_moderation set verification = 'verified' where account_id = auth.uid()$q$, 0);
+select public.expect_error('a seller cannot write another account''s record', format($q$insert into public.account_moderation (account_id, status) values (%L, 'suspended')$q$, :'s2'));
+select public.expect_rows('a seller cannot suspend another account', format($q$update public.account_moderation set status = 'suspended' where account_id = %L$q$, :'s4'), 0);
+select public.expect_count('a seller reads seller badges only (own + s4 = 2)', 'select count(*) from public.account_moderation', 2);
+select public.expect_rows('a seller cannot delete their account record', $q$delete from public.account_moderation where account_id = auth.uid()$q$, 0);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'b1', false);
+select public.expect_count('a buyer reads seller badges only (2)', 'select count(*) from public.account_moderation', 2);
+select public.expect_count('a buyer cannot read another buyer''s record', format('select count(*) from public.account_moderation where account_id = %L', :'b3'), 0);
+select public.expect_error('a buyer cannot ask for verification', 'select public.request_verification()');
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'x2', false);
+select public.expect_count('the administrator reads every account record (3)', 'select count(*) from public.account_moderation', 3);
+select public.expect_rows('the administrator can verify a seller', format($q$update public.account_moderation set verification = 'verified' where account_id = %L$q$, :'s1'), 1);
+select public.expect_rows('the administrator can suspend an account', format($q$update public.account_moderation set status = 'suspended' where account_id = %L$q$, :'s4'), 1);
+select public.expect_rows('the administrator can delete an account record', format($q$delete from public.account_moderation where account_id = %L$q$, :'b3'), 1);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'s1', false);
+select public.request_verification();
+select public.expect_count('a repeat request cannot undo the administrator''s decision', format($q$select count(*) from public.account_moderation where account_id = %L and verification = 'verified'$q$, :'s1'), 1);
+reset role;
+
+-- Escrow holds and sales ledger --------------------------------------------------
+select '--- escrow holds' as section;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'x2', false);
+select public.expect_rows('the administrator can place a hold', $q$insert into public.payment_holds (order_id, reason) values ('00000000-0000-0000-0000-0000000000f2', 'Payment under review')$q$, 1);
+select public.expect_count('the hold reads back', $q$select count(*) from public.payment_holds where order_id = '00000000-0000-0000-0000-0000000000f2'$q$, 1);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'s1', false);
+select public.expect_count('a seller cannot read escrow holds', 'select count(*) from public.payment_holds', 0);
+select public.expect_error('a seller cannot place a hold', $q$insert into public.payment_holds (order_id, reason) values ('00000000-0000-0000-0000-0000000000f1', 'mine')$q$);
+select public.expect_rows('a seller cannot release a hold', 'delete from public.payment_holds', 0);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'b1', false);
+select public.expect_count('a buyer cannot read escrow holds', 'select count(*) from public.payment_holds', 0);
+select public.expect_rows('a buyer cannot release a hold', 'delete from public.payment_holds', 0);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'x2', false);
+select public.expect_rows('the administrator can release the hold', $q$delete from public.payment_holds where order_id = '00000000-0000-0000-0000-0000000000f2'$q$, 1);
+reset role;
+
+select '--- sales ledger' as section;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'s1', false);
+select public.expect_rows('a seller records their own purchase', $q$insert into public.store_sales (kind, label, amount, currency) values ('verification', 'Verified badge', 500, 'KES')$q$, 1);
+select public.expect_count('a seller reads only their own sales (1)', 'select count(*) from public.store_sales', 1);
+select public.expect_error('a seller cannot record a purchase for someone else', format($q$insert into public.store_sales (account_id, kind, label, amount, currency) values (%L, 'pro', 'Seller Pro', 300, 'KES')$q$, :'s2'));
+select public.expect_error('a seller cannot edit the ledger', $q$update public.store_sales set amount = 1$q$);
+select public.expect_error('a seller cannot erase the ledger', $q$delete from public.store_sales$q$);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'b1', false);
+select public.expect_error('a buyer cannot record a purchase', $q$insert into public.store_sales (kind, label, amount, currency) values ('boost', 'Boost', 100, 'KES')$q$);
+select public.expect_count('a buyer reads no sales', 'select count(*) from public.store_sales', 0);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'x2', false);
+select public.expect_count('the administrator reads the whole ledger (2)', 'select count(*) from public.store_sales', 2);
+reset role;
+
+-- Display preferences -------------------------------------------------------------
+select '--- display preferences' as section;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'s1', false);
+select public.expect_rows('a seller saves their own preferences', $q$insert into public.preferences (theme, text_size, display_currency) values ('dark', 'large', 'KES')$q$, 1);
+select public.expect_count('their preferences read back (1)', 'select count(*) from public.preferences', 1);
+select public.expect_rows('they can change them', $q$update public.preferences set theme = 'light' where account_id = auth.uid()$q$, 1);
+select public.expect_error('they cannot hand them to another account', format($q$update public.preferences set account_id = %L where account_id = auth.uid()$q$, :'b1'));
+select public.expect_rows('they cannot delete another account''s settings', format($q$delete from public.preferences where account_id = %L$q$, :'b1'), 0);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'b1', false);
+select public.expect_rows('a buyer saves their own preferences', $q$insert into public.preferences (theme, text_size) values ('dark', 'small')$q$, 1);
+select public.expect_count('settings stay private: only their own reads back (1)', 'select count(*) from public.preferences', 1);
+select public.expect_rows('they cannot change someone else''s settings', format($q$update public.preferences set theme = 'light' where account_id = %L$q$, :'s1'), 0);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'x2', false);
+select public.expect_count('settings are private even from an administrator (0)', 'select count(*) from public.preferences', 0);
+reset role;
+
+select '--- listing photos' as section;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'s1', false);
+select public.expect_rows('a seller uploads a photo for their own listing', $q$insert into storage.objects (bucket_id, name) select 'listing-photos', id::text || '/main.jpg' from public.listings where seller_id = auth.uid() and price = 100 limit 1$q$, 1);
+select public.expect_error('a seller cannot upload into another seller''s folder', format($q$insert into storage.objects (bucket_id, name) values ('listing-photos', %L || '/stolen.jpg')$q$, :'l_sheep'));
+select public.expect_count('every signed-in account can view the photos (2)', 'select count(*) from storage.objects', 2);
+select public.expect_rows('a seller can replace their own photo', format($q$update storage.objects set created_at = created_at where name like %L$q$, :'l_goats' || '%'), 1);
+select public.expect_rows('a seller cannot touch another seller''s photo', format($q$update storage.objects set created_at = created_at where name like %L$q$, :'l_sheep' || '%'), 0);
+select public.expect_rows('a seller cannot delete another seller''s photo', format($q$delete from storage.objects where name like %L$q$, :'l_sheep' || '%'), 0);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'b1', false);
+select public.expect_error('a buyer cannot upload photos', format($q$insert into storage.objects (bucket_id, name) values ('listing-photos', %L || '/x.jpg')$q$, :'l_sheep'));
+reset role;
+
+select '--- signed-out visitor (new tables)' as section;
+set role anon;
+select public.expect_count('a visitor can view listing photos (2)', 'select count(*) from storage.objects', 2);
+select public.expect_error('a visitor cannot upload photos', format($q$insert into storage.objects (bucket_id, name) values ('listing-photos', %L || '/x.jpg')$q$, :'l_sheep'));
+select public.expect_error('a visitor cannot read orders', 'select count(*) from public.orders');
+select public.expect_error('a visitor cannot read account records', 'select count(*) from public.account_moderation');
+select public.expect_error('a visitor cannot read escrow holds', 'select count(*) from public.payment_holds');
+select public.expect_error('a visitor cannot read sales', 'select count(*) from public.store_sales');
+select public.expect_error('a visitor cannot read preferences', 'select count(*) from public.preferences');
+reset role;
